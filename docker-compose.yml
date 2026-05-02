@@ -1,0 +1,28 @@
+services:
+ 
+  
+  postgres:
+      image: postgres:17
+      container_name: marketplace
+      env_file: 
+        .env.dev
+      ports:
+        - "6432:5432"  
+      volumes:
+        - marketplace_data:/var/lib/postgresql/data
+      networks:
+        - marketplace_network
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} || exit 1"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+      restart: unless-stopped
+
+
+volumes:
+  marketplace_data:
+
+networks:
+  marketplace_network:
+    driver: bridge      

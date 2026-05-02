@@ -8,5 +8,5 @@ class TimestampMixin:
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         server_default=func.now(),
-        server_onupdate=func.now(),
+        onupdate=func.now(),
     )

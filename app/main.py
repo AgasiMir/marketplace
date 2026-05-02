@@ -1,6 +1,7 @@
-def main():
-    print("Hello from marketplace!")
+from fastapi import FastAPI
+from app.domains import routers
 
+app = FastAPI(title="Marketplace", version="1.0")
 
-if __name__ == "__main__":
-    main()
+for router in routers:
+    app.include_router(router)
