@@ -27,14 +27,13 @@ class CategoryService:
             sort_by = desc(sort_by)
 
         page = pagination.page
-        offset = (page - 1) * pagination.size.value
-        limit = pagination.size.value
+        offset = (page - 1) * pagination.page_size.value
+        limit = pagination.page_size.value
 
         return await self.db_manager.categories.get_categories(
             offset=offset,
             limit=limit,
             sort_by=sort_by,
-            sort_order=sort_order,
         )
 
     async def create_category(self, category: CategoryCreate) -> CategoryPublic:

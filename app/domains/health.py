@@ -7,7 +7,7 @@ router = APIRouter(prefix="/health", tags=["health"])
 
 
 @router.get(
-    "/",
+    "",
     status_code=status.HTTP_200_OK,
     summary="Health check",
     description="Эндпойнт для проверки работоспособности сервиса",

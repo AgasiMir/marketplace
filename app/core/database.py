@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy import MetaData
+from sqlalchemy import MetaData, NullPool
 
 
 from app.config import settings
@@ -16,8 +16,18 @@ async_engine = create_async_engine(
 )
 
 
+engine_null_pull = create_async_engine(url=settings.DB_URL, poolclass=NullPool)
+
+
 async_session = async_sessionmaker(
     bind=async_engine,
+    expire_on_commit=False,
+    class_=AsyncSession,
+)
+
+
+async_session_null_pool = async_sessionmaker(
+    bind=engine_null_pull,
     expire_on_commit=False,
     class_=AsyncSession,
 )

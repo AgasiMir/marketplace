@@ -32,7 +32,6 @@ class CategoryRepository:
         offset: int,
         limit: int,
         sort_by: str,
-        sort_order: str,
     ) -> list[CategoryPublic]:
 
         categories = await self.session.scalars(
@@ -62,7 +61,7 @@ class CategoryRepository:
     async def delete_category(self, category_id: int) -> dict:
         db_category = await self._get_category_for_update(category_id)
         if not db_category:
-            raise CategoryNotFoundException(category_id)
+            raise CategoryNotFoundException
 
         db_category.is_active = False
         return {"message": "Category deleted"}

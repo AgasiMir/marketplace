@@ -24,7 +24,7 @@ router = APIRouter(
 
 
 @router.get(
-    "/",
+    "",
     summary="Get categories",
     description="Эндпойнт для получения категорий",
     response_model=list[CategoryPublic],
@@ -42,7 +42,7 @@ async def get_categories(
 
 
 @router.post(
-    "/",
+    "",
     status_code=status.HTTP_201_CREATED,
     summary="Create category",
     description="Эндпойнт для создания новой категории",

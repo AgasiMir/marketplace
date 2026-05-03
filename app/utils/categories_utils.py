@@ -23,4 +23,4 @@ class SortBy(StrEnum):
 
 class Pagination(BaseModel):
     page: int = Field(default=1, ge=1, description="Номер страницы")
-    size: PageSize = Field(description="Размер страницы")
+    page_size: PageSize = Field(description="Размер страницы")
