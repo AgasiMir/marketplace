@@ -50,10 +50,10 @@ async def test_create_category(db: DBManager, categories):
 
 async def test_partial_update_category(db: DBManager, categories):
     cat_1, _ = categories
-    partial_updata_data = CategoryPartialUpdate(**{"name": "Laptops!!!"})
+    partial_update_data = CategoryPartialUpdate(**{"name": "Laptops!!!"})
     db_cat = await db.categories.create_category(cat_1)
 
-    res = await db.categories.partial_update_category(db_cat.id, partial_updata_data)
+    res = await db.categories.partial_update_category(db_cat.id, partial_update_data)
     assert res.name == "Laptops!!!"
 
 
@@ -66,10 +66,10 @@ async def test_delete_category(db: DBManager, categories):
 
 
 async def test_partial_update_non_existing_category(db: DBManager):
-    partial_updata_data = CategoryPartialUpdate(**{"name": "Laptops!!!"})
+    partial_update_data = CategoryPartialUpdate(**{"name": "Laptops!!!"})
 
     with pytest.raises(CategoryNotFoundException):
-        await db.categories.partial_update_category(123, partial_updata_data)
+        await db.categories.partial_update_category(123, partial_update_data)
 
 
 async def test_delete_non_existing_category(db: DBManager):

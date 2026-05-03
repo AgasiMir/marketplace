@@ -14,13 +14,6 @@ class CategoryNotFoundHTTPException(MarketplaceHTTPException):
     detail = "Category Not Found"
 
 
-class CategoryAlreadyHTTPExistsException(MarketplaceHTTPException):
-    status_code = status.HTTP_409_CONFLICT
-
-    def __init__(self, wallet_name: str):
-        self.detail = f"Category {wallet_name!r} Already Exists"
-
-
 class UserAlreadyHTTPExistsException(MarketplaceHTTPException):
     status_code = status.HTTP_409_CONFLICT
     detail = "User With Such Email Already Exists"

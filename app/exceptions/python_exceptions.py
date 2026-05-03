@@ -9,10 +9,6 @@ class CategoryNotFoundException(MarketplaceException):
     detail = "Category Not Found"
 
 
-class WalletAlreadyExistsException(MarketplaceException):
-    detail = "Category Already Exists"
-
-
 class UserAlreadyExistsException(MarketplaceException):
     detail = "User With Such Email Already Exists"
 

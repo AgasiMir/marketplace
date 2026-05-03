@@ -37,11 +37,11 @@ async def test_create_category(db: DBManager, categories):
 
 async def test_partial_update_category(db: DBManager, categories):
     cat_1, _ = categories
-    partial_updata_data = CategoryPartialUpdate(**{"name": "Laptops!!!"})
+    partial_update_data = CategoryPartialUpdate(**{"name": "Laptops!!!"})
     db_category = await CategoryService(db).create_category(cat_1)
 
     res = await CategoryService(db).partial_update_category(
-        db_category.id, partial_updata_data
+        db_category.id, partial_update_data
     )
     assert res.name == "Laptops!!!"
 
