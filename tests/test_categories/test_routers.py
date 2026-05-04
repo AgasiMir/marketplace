@@ -1,6 +1,18 @@
+import pytest
 from unittest.mock import patch
 
+
 from app.exceptions.python_exceptions import CategoryNotFoundException
+
+
+@pytest.fixture
+async def create_category(authenticated_admin):
+    response = await authenticated_admin.post(
+        "/categories",
+        json={"name": "Test Category"},
+    )
+    assert response.status_code == 201
+    return response.json()
 
 
 async def test_get_categories(async_client):
@@ -26,19 +38,35 @@ async def test_create_category(authenticated_admin):
     assert category["name"] == "Test Category"
 
 
-async def test_partial_update_category(authenticated_admin):
-    res = await authenticated_admin.post(
+async def test_create_category_without_permission(authenticated_buyer):
+    response = await authenticated_buyer.post(
         "/categories",
         json={"name": "Test Category"},
     )
+    assert response.status_code == 403
+
+
+async def test_partial_update_category(create_category, authenticated_admin):
 
     response = await authenticated_admin.patch(
-        f"/categories/{res.json()['id']}",
+        f"/categories/{create_category['id']}",
         json={"name": "Updated Test Category"},
     )
     assert response.status_code == 200
     category = response.json()
     assert category["name"] == "Updated Test Category"
+
+
+async def test_partial_update_category_without_permission(
+    create_category, authenticated_buyer
+):
+
+    response = await authenticated_buyer.patch(
+        f"/categories/{create_category['id']}",
+        json={"name": "Updated Test Category"},
+    )
+
+    assert response.status_code == 403
 
 
 async def test_partial_update_non_existing_category(authenticated_admin):
@@ -55,15 +83,10 @@ async def test_partial_update_non_existing_category(authenticated_admin):
         mock_category.assert_called_once()
 
 
-async def test_delete_category(authenticated_admin):
-
-    res = await authenticated_admin.post(
-        "/categories",
-        json={"name": "Test Category"},
-    )
+async def test_delete_category(create_category, authenticated_admin):
 
     response = await authenticated_admin.delete(
-        f"/categories/{res.json()['id']}",
+        f"/categories/{create_category['id']}",
     )
     assert response.json() == {"message": "Category deleted"}
 
@@ -79,3 +102,17 @@ async def test_delete_non_existing_category(authenticated_admin):
         )
         assert response.status_code == 404
         mock_category.assert_called_once_with(1)
+
+
+async def test_delete_category_without_permission(create_category, authenticated_buyer):
+
+    response = await authenticated_buyer.delete(
+        f"/categories/{create_category['id']}",
+    )
+    assert response.status_code == 403
+
+
+async def test_delete_category_without_login(async_client):
+
+    response = await async_client.delete("/categories/123")
+    assert response.status_code == 401

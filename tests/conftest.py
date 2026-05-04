@@ -205,10 +205,10 @@ async def register_admin(db: DBManager):
     from app.models import User
 
     data = {
-        "first_name": "John",
+        "first_name": "Jane",
         "last_name": "Doe",
-        "username": "JD",
-        "email": "user@example.com",
+        "username": "Ja_Do",
+        "email": "user@example.org",
         "password": hash_password("1234abcd"),
         "role": "admin",
     }
@@ -223,7 +223,7 @@ async def authenticated_admin(register_admin, async_client):
 
     response = await async_client.post(
         "/users/login",
-        data={"username": "JD", "password": "1234abcd"},
+        data={"username": "Ja_Do", "password": "1234abcd"},
     )
 
     assert response.status_code == 200, f"Failed to get token: {response.text}"
