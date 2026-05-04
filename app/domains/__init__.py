@@ -1,9 +1,10 @@
 from .categories.routers import router as categories_router
-
+from .users.routers import router as users_router
 
 from .health import router as health_router
 
 routers = [
-    categories_router,
     health_router,
+    users_router,
+    categories_router,
 ]

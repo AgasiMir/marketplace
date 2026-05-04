@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     DB_PORT: int
     POSTGRES_DB: str
 
+    SECRET_KEY: str
+    ALGORITHM: str
+
     @property
     def DB_URL(self):
         url = f"{self.DB_DRIVER}://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.POSTGRES_DB}"

@@ -5,7 +5,7 @@ from app.domains.categories.schemas import (
     CategoryPartialUpdate,
     CategoryPublic,
 )
-from app.domains.dependencies import CategoryServiceDep, PaginationDep
+from app.domains.dependencies import CategoryServiceDep, PaginationDep, AdminDep
 from app.utils.categories_utils import SortBy, SortOrder
 
 
@@ -45,24 +45,29 @@ async def get_categories(
     "",
     status_code=status.HTTP_201_CREATED,
     summary="Create category",
-    description="Эндпойнт для создания новой категории",
+    description="Эндпойнт для создания новой категории. Доступен только администратору",
     response_model=CategoryPublic,
 )
-async def create_category(cats: CategoryServiceDep, category: CategoryCreate):
-    return await cats.create_category(category)
+async def create_category(
+    cats: CategoryServiceDep, create_category: CategoryCreate, admin: AdminDep
+):
+    return await cats.create_category(create_category)
 
 
 @router.patch(
     "/{category_id}",
     summary="Partial update category",
-    description="Эндпойнт для частичного обновления категории",
+    description="Эндпойнт для частичного обновления категории. Доступен только администратору",
     response_model=CategoryPublic,
 )
 async def partial_update_category(
-    cats: CategoryServiceDep, category_id: int, category: CategoryPartialUpdate
+    admin: AdminDep,
+    cats: CategoryServiceDep,
+    category_id: int,
+    patch_category: CategoryPartialUpdate,
 ):
     try:
-        return await cats.partial_update_category(category_id, category)
+        return await cats.partial_update_category(category_id, patch_category)
     except CategoryNotFoundException:
         raise CategoryNotFoundHTTPException
 
@@ -70,9 +75,11 @@ async def partial_update_category(
 @router.delete(
     "/{category_id}",
     summary="Delete category",
-    description="Эндпойнт для логического удаления категории",
+    description="Эндпойнт для логического удаления категории. Доступен только администратору",
 )
-async def delete_category(cats: CategoryServiceDep, category_id: int) -> dict:
+async def delete_category(
+    cats: CategoryServiceDep, category_id: int, admin: AdminDep
+) -> dict:
     try:
         return await cats.delete_category(category_id)
     except CategoryNotFoundException:

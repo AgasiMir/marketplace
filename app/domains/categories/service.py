@@ -36,14 +36,14 @@ class CategoryService:
             sort_by=sort_by,
         )
 
-    async def create_category(self, category: CategoryCreate) -> CategoryPublic:
-        return await self.db_manager.categories.create_category(category)
+    async def create_category(self, create_category: CategoryCreate) -> CategoryPublic:
+        return await self.db_manager.categories.create_category(create_category)
 
     async def partial_update_category(
-        self, category_id: int, category: CategoryPartialUpdate
+        self, category_id: int, patch_category: CategoryPartialUpdate
     ) -> CategoryPublic:
         return await self.db_manager.categories.partial_update_category(
-            category_id, category
+            category_id, patch_category
         )
 
     async def delete_category(self, category_id: int) -> dict:

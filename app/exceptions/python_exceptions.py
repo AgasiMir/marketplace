@@ -13,6 +13,10 @@ class UserAlreadyExistsException(MarketplaceException):
     detail = "User With Such Email Already Exists"
 
 
+class UserNotFoundException(MarketplaceException):
+    detail = "User Not Found"
+
+
 class IncorrectCredentialsException(MarketplaceException):
     detail = "Incorrect Email Or Password"
 

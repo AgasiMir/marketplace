@@ -14,9 +14,14 @@ class CategoryNotFoundHTTPException(MarketplaceHTTPException):
     detail = "Category Not Found"
 
 
-class UserAlreadyHTTPExistsException(MarketplaceHTTPException):
+class UserAlreadyExistsHTTPException(MarketplaceHTTPException):
     status_code = status.HTTP_409_CONFLICT
-    detail = "User With Such Email Already Exists"
+    detail = "User With Such Email or Username Already Exists"
+
+
+class UserNotFoundHTTPException(MarketplaceHTTPException):
+    status_code = status.HTTP_404_NOT_FOUND
+    detail = "User Not Found"
 
 
 class IncorrectCredentialsHTTPException(MarketplaceHTTPException):
@@ -35,3 +40,13 @@ class JWTExpiredSignatureException(MarketplaceHTTPException):
     status_code = status.HTTP_401_UNAUTHORIZED
     detail = "Token has expired"
     headers = {"WWW-Authenticate": "Bearer"}
+
+
+class AdminOnlyHTTPException(MarketplaceHTTPException):
+    status_code = status.HTTP_403_FORBIDDEN
+    detail = "Only administrators can perform this action"
+
+
+class SellerOnlyHTTPException(MarketplaceHTTPException):
+    status_code = status.HTTP_403_FORBIDDEN
+    detail = "Only sellers can perform this action"

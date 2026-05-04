@@ -39,21 +39,22 @@ class CategoryRepository:
         )
         return [self._from_db(category) for category in categories.all()]
 
-    async def create_category(self, category: CategoryCreate) -> CategoryPublic:
-        db_category = Category(**category.model_dump())
+    async def create_category(self, create_category: CategoryCreate) -> CategoryPublic:
+        db_category = Category(**create_category.model_dump())
         self.session.add(db_category)
         await self.session.flush()
 
         return self._from_db(db_category)
 
     async def partial_update_category(
-        self, category_id: int, category: CategoryPartialUpdate
+        self, category_id: int, patch_category: CategoryPartialUpdate
     ) -> CategoryPublic:
         db_category = await self._get_category_for_update(category_id)
+
         if not db_category:
             raise CategoryNotFoundException
 
-        for key, value in category.model_dump(exclude_unset=True).items():
+        for key, value in patch_category.model_dump(exclude_unset=True).items():
             setattr(db_category, key, value)
 
         return self._from_db(db_category)
