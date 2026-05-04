@@ -6,6 +6,8 @@ from unittest import mock
 
 import pytest_asyncio
 
+from app.auth import hash_password
+
 
 # Мок для fastapi_limiter - отключает ограничение скорости в тестах
 # RateLimiter заменяется на функцию, которая возвращает lambda: None,
@@ -163,3 +165,70 @@ async def async_client() -> AsyncGenerator[AsyncClient, None]:
         base_url="http://test",
     ) as client:
         yield client
+
+
+@pytest.fixture(scope="function")
+async def register_buyer(async_client):
+    data = {
+        "first_name": "John",
+        "last_name": "Doe",
+        "username": "JD",
+        "email": "user@example.com",
+        "password": "1234abcd",
+        "role": "buyer",
+    }
+    response = await async_client.post(
+        "/users",
+        json=data,
+    )
+    assert response.status_code == 201, f"Failed to create user: {response.text}"
+
+
+@pytest.fixture(scope="function")
+async def authenticated_buyer(register_buyer, async_client):
+
+    response = await async_client.post(
+        "/users/login",
+        data={"username": "JD", "password": "1234abcd"},
+    )
+
+    assert response.status_code == 200, f"Failed to get token: {response.text}"
+    token = response.json().get("access_token")
+
+    assert token is not None, "Token is missing in response"
+    async_client.headers["Authorization"] = f"Bearer {token}"
+    yield async_client
+
+
+@pytest.fixture()
+async def register_admin(db: DBManager):
+    from app.models import User
+
+    data = {
+        "first_name": "John",
+        "last_name": "Doe",
+        "username": "JD",
+        "email": "user@example.com",
+        "password": hash_password("1234abcd"),
+        "role": "admin",
+    }
+
+    admin_user = User(**data)
+    db.add(admin_user)
+    await db.commit()
+
+
+@pytest.fixture(scope="function")
+async def authenticated_admin(register_admin, async_client):
+
+    response = await async_client.post(
+        "/users/login",
+        data={"username": "JD", "password": "1234abcd"},
+    )
+
+    assert response.status_code == 200, f"Failed to get token: {response.text}"
+    token = response.json().get("access_token")
+
+    assert token is not None, "Token is missing in response"
+    async_client.headers["Authorization"] = f"Bearer {token}"
+    yield async_client

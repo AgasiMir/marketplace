@@ -16,8 +16,8 @@ async def test_get_categories(async_client):
     assert response.status_code == 200
 
 
-async def test_create_category(async_client):
-    response = await async_client.post(
+async def test_create_category(authenticated_admin):
+    response = await authenticated_admin.post(
         "/categories",
         json={"name": "Test Category"},
     )
@@ -26,13 +26,13 @@ async def test_create_category(async_client):
     assert category["name"] == "Test Category"
 
 
-async def test_partial_update_category(async_client):
-    res = await async_client.post(
+async def test_partial_update_category(authenticated_admin):
+    res = await authenticated_admin.post(
         "/categories",
         json={"name": "Test Category"},
     )
 
-    response = await async_client.patch(
+    response = await authenticated_admin.patch(
         f"/categories/{res.json()['id']}",
         json={"name": "Updated Test Category"},
     )
@@ -41,25 +41,13 @@ async def test_partial_update_category(async_client):
     assert category["name"] == "Updated Test Category"
 
 
-async def test_delete_category(async_client):
-    res = await async_client.post(
-        "/categories",
-        json={"name": "Test Category"},
-    )
-
-    response = await async_client.delete(
-        f"/categories/{res.json()['id']}",
-    )
-    assert response.json() == {"message": "Category deleted"}
-
-
-async def test_partial_update_non_existing_category(async_client):
+async def test_partial_update_non_existing_category(authenticated_admin):
     with patch(
         "app.domains.categories.service.CategoryService.partial_update_category"
     ) as mock_category:
         mock_category.side_effect = CategoryNotFoundException
 
-        response = await async_client.patch(
+        response = await authenticated_admin.patch(
             "/categories/1",
             json={"name": "Updated Test Category"},
         )
@@ -67,13 +55,26 @@ async def test_partial_update_non_existing_category(async_client):
         mock_category.assert_called_once()
 
 
-async def test_delete_non_existing_category(async_client):
+async def test_delete_category(authenticated_admin):
+
+    res = await authenticated_admin.post(
+        "/categories",
+        json={"name": "Test Category"},
+    )
+
+    response = await authenticated_admin.delete(
+        f"/categories/{res.json()['id']}",
+    )
+    assert response.json() == {"message": "Category deleted"}
+
+
+async def test_delete_non_existing_category(authenticated_admin):
     with patch(
         "app.domains.categories.service.CategoryService.delete_category"
     ) as mock_category:
         mock_category.side_effect = CategoryNotFoundException
 
-        response = await async_client.delete(
+        response = await authenticated_admin.delete(
             "/categories/1",
         )
         assert response.status_code == 404
