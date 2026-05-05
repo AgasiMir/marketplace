@@ -23,3 +23,11 @@ class IncorrectCredentialsException(MarketplaceException):
 
 class CredentialsException(MarketplaceException):
     detail = "Could not validate refresh token"
+
+
+class ProductNotFoundException(MarketplaceException):
+    detail = "Product Not Found"
+
+
+class WrongSortByException(MarketplaceException):
+    detail = "Invalid sort_by Value"

@@ -1,5 +1,6 @@
 from app.domains.categories.repository import CategoryRepository
 from app.domains.users.repository import UserRepository
+from app.domains.products.repository import ProductRepository
 
 
 class DBManager:
@@ -38,6 +39,7 @@ class DBManager:
 
         self.categories = CategoryRepository(self.session)
         self.users = UserRepository(self.session)
+        self.products = ProductRepository(self.session)
 
         return self
 

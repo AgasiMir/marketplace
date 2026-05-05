@@ -35,7 +35,7 @@ class UserService:
         except jwt.PyJWTError:
             raise CredentialsException
 
-        if not await self.db_manager.users._get_user_by_username(username):
+        if not await self.db_manager.users.get_user_by_username(username):
             raise UserNotFoundException
 
         return await self.db_manager.users.refresh_token(username)

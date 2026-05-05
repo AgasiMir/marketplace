@@ -16,10 +16,11 @@ from app.exceptions.fastapi_exceptions import (
 from app.models.user import User, UserRole
 from app.uow.uow import DBManager
 
-from app.utils.categories_utils import Pagination
+from app.utils.utils import Pagination
 
 from app.domains.categories.service import CategoryService
 from app.domains.users.service import UserService
+from app.domains.products.service import ProductService
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
@@ -60,7 +61,7 @@ async def get_current_user(db: DBDep, token: str = Depends(oauth2_scheme)):
     except jwt.PyJWTError:
         raise CredentialsHTTPException
 
-    user = await db.users._get_user_by_username(username)
+    user = await db.users.get_user_by_username(username)
 
     if user is None:
         raise CredentialsHTTPException
@@ -112,4 +113,14 @@ async def get_user_service(db_manager: DBDep) -> UserService:
 
 
 UserServiceDep = Annotated[UserService, Depends(get_user_service)]
+# ---------------------------------------------------------------
+
+
+# Зависимость для получения сервиса продуктов
+# ---------------------------------------------------------------
+async def get_product_service(db_manager: DBDep) -> ProductService:
+    return ProductService(db_manager=db_manager)
+
+
+ProductServiceDep = Annotated[ProductService, Depends(get_product_service)]
 # ---------------------------------------------------------------

@@ -1,8 +1,13 @@
+from typing import TYPE_CHECKING
 from sqlalchemy import Boolean, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
 from app.models.mixins import TimestampMixin
+
+
+if TYPE_CHECKING:
+    from app.models import Product
 
 
 class Category(TimestampMixin, Base):
@@ -23,6 +28,8 @@ class Category(TimestampMixin, Base):
     )
 
     children: Mapped[list["Category"]] = relationship(back_populates="parent")
+
+    products: Mapped[list["Product"]] = relationship(back_populates="category")
 
     def __repr__(self) -> str:
         return f"{self.name}"

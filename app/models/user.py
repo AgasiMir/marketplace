@@ -1,9 +1,14 @@
+from typing import TYPE_CHECKING
 from sqlalchemy import Boolean, Integer, String, Enum as SAEnum
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from enum import StrEnum
 
 from app.core.database import Base
 from app.models.mixins import TimestampMixin
+
+
+if TYPE_CHECKING:
+    from app.models import Product
 
 
 class UserRole(StrEnum):
@@ -27,3 +32,8 @@ class User(TimestampMixin, Base):
         server_default="buyer",
         nullable=False,
     )
+
+    products: Mapped[list["Product"]] = relationship(back_populates="seller")
+
+    def __repr__(self) -> str:
+        return self.username

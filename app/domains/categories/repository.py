@@ -14,7 +14,7 @@ class CategoryRepository:
         self.session = session
 
     @staticmethod
-    def _from_db(model) -> CategoryPublic:
+    def _from_db(model: Category) -> CategoryPublic:
         return CategoryPublic.model_validate(model)
 
     async def _get_category_for_update(self, category_id: int) -> Category:

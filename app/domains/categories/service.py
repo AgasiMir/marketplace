@@ -1,11 +1,12 @@
 from sqlalchemy import desc
+from app.exceptions.python_exceptions import WrongSortByException
 from app.uow.uow import DBManager
 from app.domains.categories.schemas import (
     CategoryCreate,
     CategoryPartialUpdate,
     CategoryPublic,
 )
-from app.utils.categories_utils import Pagination
+from app.utils.utils import Pagination
 
 
 class CategoryService:
@@ -21,7 +22,7 @@ class CategoryService:
         sort_by = sort_by.lower()
 
         if sort_by not in LIST_OF_SORT_BY:
-            raise ValueError("Invalid sort_by value")
+            raise WrongSortByException
 
         if sort_order == "desc":
             sort_by = desc(sort_by)

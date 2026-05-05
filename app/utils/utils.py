@@ -21,6 +21,12 @@ class SortBy(StrEnum):
     NAME = "name"
 
 
+class ProductSortBy(StrEnum):
+    id = "created_at"
+    name = "name"
+    price = "price"
+
+
 class Pagination(BaseModel):
     page: int = Field(default=1, ge=1, description="Номер страницы")
     page_size: PageSize = Field(description="Размер страницы")

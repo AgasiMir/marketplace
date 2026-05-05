@@ -6,15 +6,21 @@ from app.domains.categories.schemas import (
     CategoryPublic,
 )
 from app.domains.dependencies import CategoryServiceDep, PaginationDep, AdminDep
-from app.utils.categories_utils import SortBy, SortOrder
+from app.utils.utils import SortBy, SortOrder
 
 
 from pyrate_limiter import Duration, Limiter, Rate
 from fastapi_limiter.depends import RateLimiter
 
 
-from app.exceptions.python_exceptions import CategoryNotFoundException
-from app.exceptions.fastapi_exceptions import CategoryNotFoundHTTPException
+from app.exceptions.python_exceptions import (
+    CategoryNotFoundException,
+    WrongSortByException,
+)
+from app.exceptions.fastapi_exceptions import (
+    CategoryNotFoundHTTPException,
+    WrongSortByHTTPException,
+)
 
 router = APIRouter(
     prefix="/categories",
@@ -35,10 +41,14 @@ async def get_categories(
     sort_by: SortBy,
     sort_order: SortOrder,
 ):
-
-    return await cats.get_categories(
-        pagination=pagination, sort_by=sort_by.name, sort_order=sort_order.value
-    )
+    try:
+        return await cats.get_categories(
+            pagination=pagination,
+            sort_by=sort_by.name,
+            sort_order=sort_order.value,
+        )
+    except WrongSortByException:
+        raise WrongSortByHTTPException
 
 
 @router.post(

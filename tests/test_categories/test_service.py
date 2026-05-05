@@ -1,8 +1,9 @@
 import pytest
+from app.exceptions.python_exceptions import WrongSortByException
 from app.uow.uow import DBManager
 from app.domains.categories.schemas import CategoryCreate, CategoryPartialUpdate
 from app.domains.categories.service import CategoryService
-from app.utils.categories_utils import Pagination
+from app.utils.utils import Pagination
 
 
 @pytest.fixture
@@ -62,5 +63,5 @@ async def test_get_categories_with_wrong_sort_by(db: DBManager, categories):
 
     pagination = Pagination(page=1, page_size=10)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(WrongSortByException):
         await CategoryService(db).get_categories(pagination, "created_at", "desc")

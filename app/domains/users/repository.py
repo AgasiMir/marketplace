@@ -14,7 +14,8 @@ class UserRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    def _from_db(self, model) -> UserPublic:
+    @staticmethod
+    def _from_db(model: User) -> UserPublic:
         return UserPublic.model_validate(model)
 
     async def _check_if_user_exists(self, email: str, username: str) -> bool:
@@ -30,7 +31,7 @@ class UserRepository:
 
         return True if res else False
 
-    async def _get_user_by_username(self, username: str) -> User:
+    async def get_user_by_username(self, username: str) -> User:
 
         return await self.session.scalar(
             select(User).where(
@@ -50,7 +51,7 @@ class UserRepository:
         )
 
     async def get_user_profile(self, username: str) -> UserPublic:
-        user = await self._get_user_by_username(username)
+        user = await self.get_user_by_username(username)
         return self._from_db(user)
 
     async def create_user(self, create_user: UserCreate) -> UserPublic:
@@ -65,7 +66,7 @@ class UserRepository:
         return self._from_db(db_user)
 
     async def login_user(self, username: str, password: str) -> dict:
-        user = await self._get_user_by_username(username)
+        user = await self.get_user_by_username(username)
 
         if not user or not verify_password(password, user.password):
             raise IncorrectCredentialsException
@@ -91,7 +92,7 @@ class UserRepository:
         }
 
     async def refresh_token(self, username: str) -> dict:
-        user = await self._get_user_by_username(username)
+        user = await self.get_user_by_username(username)
 
         access_token = create_access_token(
             data={
