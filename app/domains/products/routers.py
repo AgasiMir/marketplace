@@ -1,10 +1,14 @@
-from fastapi import APIRouter, Body, status
+from fastapi import APIRouter, Body, Depends, status
 from app.domains.products.schemas import (
     ProductCreate,
     ProductPartialUpdate,
     ProductPublic,
 )
 from app.domains.dependencies import PaginationDep, ProductServiceDep
+
+from pyrate_limiter import Duration, Limiter, Rate
+from fastapi_limiter.depends import RateLimiter
+
 from app.exceptions.fastapi_exceptions import (
     CategoryNotFoundHTTPException,
     ProductNotFoundHTTPException,
@@ -16,9 +20,14 @@ from app.exceptions.python_exceptions import (
     WrongSortByException,
 )
 from app.utils.utils import ProductSortBy, SortOrder
+from fastapi_cache.decorator import cache
 
 
-router = APIRouter(prefix="/products", tags=["products"])
+router = APIRouter(
+    prefix="/products",
+    tags=["products"],
+    dependencies=[Depends(RateLimiter(limiter=Limiter(Rate(5, Duration.SECOND * 2))))],
+)
 
 
 @router.get(
@@ -27,6 +36,7 @@ router = APIRouter(prefix="/products", tags=["products"])
     description="Эндпойнт для получения всех товаров",
     response_model=list[ProductPublic],
 )
+@cache(expire=30)
 async def get_products(
     products: ProductServiceDep,
     pagination: PaginationDep,
@@ -49,6 +59,7 @@ async def get_products(
     description="Эндпойнт для получения товара по id",
     response_model=ProductPublic,
 )
+@cache(expire=30)
 async def get_product(product_id: int, products: ProductServiceDep):
     try:
         return await products.get_product(product_id)
@@ -62,6 +73,7 @@ async def get_product(product_id: int, products: ProductServiceDep):
     description="Эндпойнт для получения товаров по категории",
     response_model=list[ProductPublic],
 )
+@cache(expire=30)
 async def get_products_by_category(category_id: int, products: ProductServiceDep):
     try:
         return await products.get_products_by_category(category_id)

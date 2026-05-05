@@ -8,6 +8,8 @@ import pytest_asyncio
 
 from app.auth import hash_password
 
+# Мок для fastapi_cache - отключает кэширование в тестах
+mock.patch("fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f).start()
 
 # Мок для fastapi_limiter - отключает ограничение скорости в тестах
 # RateLimiter заменяется на функцию, которая возвращает lambda: None,

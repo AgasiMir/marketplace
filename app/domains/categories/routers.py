@@ -22,6 +22,8 @@ from app.exceptions.fastapi_exceptions import (
     WrongSortByHTTPException,
 )
 
+from fastapi_cache.decorator import cache
+
 router = APIRouter(
     prefix="/categories",
     tags=["categories"],
@@ -35,6 +37,7 @@ router = APIRouter(
     description="Эндпойнт для получения категорий",
     response_model=list[CategoryPublic],
 )
+@cache(expire=30)
 async def get_categories(
     cats: CategoryServiceDep,
     pagination: PaginationDep,
