@@ -60,3 +60,13 @@ class ProductNotFoundHTTPException(MarketplaceHTTPException):
 class WrongSortByHTTPException(MarketplaceHTTPException):
     status_code = status.HTTP_400_BAD_REQUEST
     detail = "Invalid sort_by Value"
+
+
+class CurrentProductSellerHTTPException(MarketplaceHTTPException):
+    status_code = status.HTTP_403_FORBIDDEN
+    detail = "Only the seller of this current product can perform this action"
+
+
+class NotEnoughRightsHTTPException(MarketplaceHTTPException):
+    status_code = status.HTTP_403_FORBIDDEN
+    detail = "Only the seller of this current product or admin can perform this action"

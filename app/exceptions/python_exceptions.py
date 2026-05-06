@@ -31,3 +31,11 @@ class ProductNotFoundException(MarketplaceException):
 
 class WrongSortByException(MarketplaceException):
     detail = "Invalid sort_by Value"
+
+
+class CurrentProductSellerException(MarketplaceException):
+    detail = "Only the seller of this current product can perform this action"
+
+
+class NotEnoughRightsException(MarketplaceException):
+    detail = "Only the seller of this current product or admin can perform this action"

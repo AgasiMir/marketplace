@@ -202,6 +202,39 @@ async def authenticated_buyer(register_buyer, async_client):
     yield async_client
 
 
+@pytest.fixture(scope="function")
+async def register_seller(async_client):
+    data = {
+        "first_name": "John",
+        "last_name": "Doe",
+        "username": "JD",
+        "email": "user@example.com",
+        "password": "1234abcd",
+        "role": "seller",
+    }
+    response = await async_client.post(
+        "/users",
+        json=data,
+    )
+    assert response.status_code == 201, f"Failed to create user: {response.text}"
+
+
+@pytest.fixture(scope="function")
+async def authenticated_seller(register_seller, async_client):
+
+    response = await async_client.post(
+        "/users/login",
+        data={"username": "JD", "password": "1234abcd"},
+    )
+
+    assert response.status_code == 200, f"Failed to get token: {response.text}"
+    token = response.json().get("access_token")
+
+    assert token is not None, "Token is missing in response"
+    async_client.headers["Authorization"] = f"Bearer {token}"
+    yield async_client
+
+
 @pytest.fixture()
 async def register_admin(db: DBManager):
     from app.models import User

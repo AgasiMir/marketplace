@@ -4,18 +4,27 @@ from app.domains.products.schemas import (
     ProductPartialUpdate,
     ProductPublic,
 )
-from app.domains.dependencies import PaginationDep, ProductServiceDep
+from app.domains.dependencies import (
+    PaginationDep,
+    ProductServiceDep,
+    SellerDep,
+    UserDep,
+)
 
 from pyrate_limiter import Duration, Limiter, Rate
 from fastapi_limiter.depends import RateLimiter
 
 from app.exceptions.fastapi_exceptions import (
     CategoryNotFoundHTTPException,
+    CurrentProductSellerHTTPException,
+    NotEnoughRightsHTTPException,
     ProductNotFoundHTTPException,
     WrongSortByHTTPException,
 )
 from app.exceptions.python_exceptions import (
     CategoryNotFoundException,
+    CurrentProductSellerException,
+    NotEnoughRightsException,
     ProductNotFoundException,
     WrongSortByException,
 )
@@ -26,7 +35,7 @@ from fastapi_cache.decorator import cache
 router = APIRouter(
     prefix="/products",
     tags=["products"],
-    dependencies=[Depends(RateLimiter(limiter=Limiter(Rate(5, Duration.SECOND * 2))))],
+    dependencies=[Depends(RateLimiter(limiter=Limiter(Rate(10, Duration.SECOND * 2))))],
 )
 
 
@@ -36,7 +45,7 @@ router = APIRouter(
     description="Эндпойнт для получения всех товаров",
     response_model=list[ProductPublic],
 )
-@cache(expire=30)
+@cache(expire=120)
 async def get_products(
     products: ProductServiceDep,
     pagination: PaginationDep,
@@ -59,7 +68,7 @@ async def get_products(
     description="Эндпойнт для получения товара по id",
     response_model=ProductPublic,
 )
-@cache(expire=30)
+@cache(expire=120)
 async def get_product(product_id: int, products: ProductServiceDep):
     try:
         return await products.get_product(product_id)
@@ -73,7 +82,7 @@ async def get_product(product_id: int, products: ProductServiceDep):
     description="Эндпойнт для получения товаров по категории",
     response_model=list[ProductPublic],
 )
-@cache(expire=30)
+@cache(expire=120)
 async def get_products_by_category(category_id: int, products: ProductServiceDep):
     try:
         return await products.get_products_by_category(category_id)
@@ -86,9 +95,9 @@ async def get_products_by_category(category_id: int, products: ProductServiceDep
     status_code=status.HTTP_201_CREATED,
     summary="Create product",
     description="Эндпойнт для создания товара. Доступен только продавцу",
-    response_model=ProductPublic,
 )
 async def create_product(
+    current_seller: SellerDep,
     products: ProductServiceDep,
     create_product: ProductCreate = Body(
         openapi_examples={
@@ -105,28 +114,34 @@ async def create_product(
             }
         }
     ),
-):
+) -> dict:
     try:
-        return await products.create_product(create_product)
+        return await products.create_product(create_product, current_seller.id)
     except CategoryNotFoundException:
         raise CategoryNotFoundHTTPException
 
 
 @router.patch(
-    "",
+    "/{product_id}",
     summary="Partial update product",
     description="Эндпойнт для частичного обновления товара. Доступен только продавцу",
-    response_model=ProductPublic,
 )
 async def partial_update_product(
+    current_seller: SellerDep,
     products: ProductServiceDep,
     product_id: int,
     patch_product: ProductPartialUpdate,
-):
+) -> dict:
     try:
-        return await products.partial_update_product(product_id, patch_product)
+        return await products.partial_update_product(
+            product_id=product_id,
+            patch_product=patch_product,
+            seller_id=current_seller.id,
+        )
     except ProductNotFoundException:
         raise ProductNotFoundHTTPException
+    except CurrentProductSellerException:
+        raise CurrentProductSellerHTTPException
 
 
 @router.delete(
@@ -134,8 +149,16 @@ async def partial_update_product(
     summary="Delete product",
     description="Эндпойнт для удаления товара. Доступен только продавцу или администратору",
 )
-async def delete_product(product_id: int, products: ProductServiceDep) -> dict:
+async def delete_product(
+    product_id: int,
+    products: ProductServiceDep,
+    current_user: UserDep,
+) -> dict:
     try:
-        return await products.delete_product(product_id)
+        return await products.delete_product(product_id, current_user)
     except ProductNotFoundException:
         raise ProductNotFoundHTTPException
+    except NotEnoughRightsException:
+        raise NotEnoughRightsHTTPException
+    except CurrentProductSellerException:
+        raise CurrentProductSellerHTTPException

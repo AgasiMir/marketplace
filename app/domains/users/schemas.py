@@ -47,6 +47,11 @@ class UserCreate(BaseModel):
     def hash_password(cls, value: str) -> str:
         """Хеширует пароль перед сохранением"""
 
+        value = value.strip()
+
+        if len(value) == 0:
+            raise ValueError("Пароль не может быть пустым")
+
         return hash_password(value)
 
 
@@ -84,10 +89,28 @@ class UserPartialUpdate(BaseModel):
     @field_validator("password", mode="after")
     def hash_password(cls, value: str) -> str:
         """Хеширует пароль перед сохранением"""
+
         if value:
+            value = value.strip()
+
+            if len(value) == 0:
+                raise ValueError("Пароль не может быть пустым")
+
             return hash_password(value)
         return value
 
 
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
+
+
+class SellerForProductSchema(BaseModel):
+    """
+    Модель для ответа с данными продавца.
+    Используется в Product GET-запросах.
+    """
+
+    id: int = Field(description="Уникальный идентификатор продавца")
+    username: str = Field(description="Имя продавца")
+
+    model_config = ConfigDict(from_attributes=True)

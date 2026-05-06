@@ -2,6 +2,9 @@ from datetime import datetime
 from decimal import Decimal
 from pydantic import BaseModel, Field, ConfigDict
 
+from app.domains.categories.schemas import CategoryForProductSchema
+from app.domains.users.schemas import SellerForProductSchema
+
 
 class ProductPublic(BaseModel):
     """
@@ -15,11 +18,13 @@ class ProductPublic(BaseModel):
     price: float = Field(description="Цена товара в рублях", gt=0)
     image_url: str | None = Field(default=None, description="URL изображения товара")
     stock: int = Field(description="Количество товара на складе")
-    category_id: int = Field(description="ID категории")
     is_active: bool = Field(description="Активность товара")
 
     created_at: datetime = Field(description="Время создания категории")
     updated_at: datetime = Field(description="Время последнего обновления категории")
+
+    category: CategoryForProductSchema = Field(description="Категория товара")
+    seller: SellerForProductSchema = Field(description="Имя продавца")
 
     model_config = ConfigDict(from_attributes=True)
 

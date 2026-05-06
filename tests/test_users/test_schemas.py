@@ -1,3 +1,4 @@
+import pytest
 from app.domains.users.schemas import UserCreate, UserPartialUpdate
 from app.auth import verify_password
 
@@ -39,3 +40,16 @@ async def test_user_partial_update_schema_without_new_password():
     }
     user_partial_update = UserPartialUpdate(**data)
     assert user_partial_update.username == "JD"
+
+
+async def test_user_partial_update_schema_with_empty_password():
+    data = {
+        "first_name": "John",
+        "last_name": "Doe",
+        "username": "JD",
+        "email": "user@example.com",
+        "password": " " * 10,
+    }
+
+    with pytest.raises(ValueError):
+        UserPartialUpdate(**data)

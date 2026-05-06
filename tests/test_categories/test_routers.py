@@ -2,7 +2,10 @@ import pytest
 from unittest.mock import patch
 
 
-from app.exceptions.python_exceptions import CategoryNotFoundException
+from app.exceptions.python_exceptions import (
+    CategoryNotFoundException,
+    WrongSortByException,
+)
 
 
 @pytest.fixture
@@ -26,6 +29,41 @@ async def test_get_categories(async_client):
         },
     )
     assert response.status_code == 200
+    assert len(response.json()) <= 10
+
+
+async def test_get_categories_with_2nd_page(async_client):
+    response = await async_client.get(
+        "/categories",
+        params={
+            "page": 2,
+            "page_size": 10,
+            "sort_by": "name",
+            "sort_order": "asc",
+        },
+    )
+    assert response.status_code == 200
+    assert len(response.json()) == 0
+
+
+async def test_get_categories_with_worng_sort_by_data(async_client):
+
+    with patch(
+        "app.domains.categories.service.CategoryService.get_categories"
+    ) as mock_obj:
+        mock_obj.side_effect = WrongSortByException
+
+        response = await async_client.get(
+            "/categories",
+            params={
+                "page": 1,
+                "page_size": 10,
+                "sort_by": "name",
+                "sort_order": "asc",
+            },
+        )
+        assert response.status_code == 400
+        mock_obj.assert_awaited_once()
 
 
 async def test_create_category(authenticated_admin):

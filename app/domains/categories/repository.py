@@ -35,7 +35,11 @@ class CategoryRepository:
     ) -> list[CategoryPublic]:
 
         categories = await self.session.scalars(
-            select(Category).offset(offset).limit(limit).order_by(sort_by)
+            select(Category)
+            .where(Category.is_active)
+            .offset(offset)
+            .limit(limit)
+            .order_by(sort_by)
         )
         return [self._from_db(category) for category in categories.all()]
 

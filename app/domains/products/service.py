@@ -4,7 +4,11 @@ from app.domains.products.schemas import (
     ProductPartialUpdate,
     ProductPublic,
 )
-from app.exceptions.python_exceptions import WrongSortByException
+from app.exceptions.python_exceptions import (
+    NotEnoughRightsException,
+    WrongSortByException,
+)
+from app.models import Product
 from app.uow.uow import DBManager
 from app.utils.utils import Pagination
 
@@ -23,6 +27,8 @@ class ProductService:
 
         if sort_by not in LIST_OF_SORT_BY:
             raise WrongSortByException
+
+        sort_by = getattr(Product, sort_by)
 
         if sort_order == "desc":
             sort_by = desc(sort_by)
@@ -43,18 +49,29 @@ class ProductService:
     async def get_products_by_category(self, category_id: int) -> list[ProductPublic]:
         return await self.db_manager.products.get_products_by_category(category_id)
 
-    async def create_product(self, create_product: ProductCreate) -> ProductPublic:
-        return await self.db_manager.products.create_product(create_product)
+    async def create_product(
+        self, create_product: ProductCreate, seller_id: int
+    ) -> dict:
+        return await self.db_manager.products.create_product(create_product, seller_id)
 
     async def partial_update_product(
         self,
         product_id: int,
         patch_product: ProductPartialUpdate,
-    ) -> ProductPublic:
+        seller_id: int,
+    ) -> dict:
         return await self.db_manager.products.partial_update_product(
-            product_id,
-            patch_product,
+            product_id=product_id,
+            patch_product=patch_product,
+            seller_id=seller_id,
         )
 
-    async def delete_product(self, product_id: int) -> dict:
-        return await self.db_manager.products.delete_product(product_id)
+    async def delete_product(self, product_id: int, current_user) -> dict:
+        if current_user.role not in ("admin", "seller"):
+            raise NotEnoughRightsException
+
+        return await self.db_manager.products.delete_product(
+            product_id,
+            current_user.role,
+            current_user.id,
+        )

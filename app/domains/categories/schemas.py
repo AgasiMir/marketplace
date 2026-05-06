@@ -54,3 +54,15 @@ class CategoryPartialUpdate(BaseModel):
         default=None,
         description="ID родительской категории, если есть",
     )
+
+
+class CategoryForProductSchema(BaseModel):
+    """
+    Модель для ответа с данными категории.
+    Используется в Product GET-запросах.
+    """
+
+    id: int = Field(description="Уникальный идентификатор категории")
+    name: str = Field(description="Название категории")
+
+    model_config = ConfigDict(from_attributes=True)

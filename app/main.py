@@ -8,6 +8,7 @@ from fastapi_cache.backends.redis import RedisBackend
 from app.init import redis_manager
 
 from app.domains import routers
+from app.middlewares.cache_middleware import dispatch
 from app.middlewares.log import log_requests
 
 
@@ -23,6 +24,7 @@ app = FastAPI(lifespan=lifespan, title="Marketplace", version="1.0")
 
 
 app.middleware("http")(log_requests)
+app.middleware("http")(dispatch)
 
 for router in routers:
     app.include_router(router)
