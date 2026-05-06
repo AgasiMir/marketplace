@@ -10,6 +10,8 @@ class ProductForFavoriteSchema(BaseModel):
     name: str = Field(description="Название товара")
     price: float = Field(description="Цена товара в рублях", gt=0)
 
+    model_config = ConfigDict(from_attributes=True)
+
 
 class FavoritePublic(BaseModel):
     product: ProductForFavoriteSchema

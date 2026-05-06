@@ -19,11 +19,12 @@ class FavoriteRepository:
     async def get_favorites(self, user_id: int) -> list[FavoritePublic]:
         favorites = await self.session.scalars(
             select(Favorite)
+            .join(Product, Product.id == Favorite.product_id)
             .options(joinedload(Favorite.product))
             .where(Favorite.user_id == user_id)
         )
 
-        return favorites.all()
+        return [FavoritePublic.model_validate(favorite) for favorite in favorites.all()]
 
     async def add_favorite(self, user_id: int, create_favorite: FavoriteCreate) -> dict:
         product_id = create_favorite.product_id
