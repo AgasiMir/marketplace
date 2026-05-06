@@ -26,7 +26,7 @@ from fastapi_cache.decorator import cache
 
 router = APIRouter(
     prefix="/categories",
-    tags=["categories"],
+    tags=["categories 📁📁"],
     dependencies=[Depends(RateLimiter(limiter=Limiter(Rate(5, Duration.SECOND * 2))))],
 )
 

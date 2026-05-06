@@ -5,6 +5,7 @@ from app.domains.products.schemas import (
     ProductPublic,
 )
 from app.domains.dependencies import (
+    OptionalUserDep,
     PaginationDep,
     ProductServiceDep,
     SellerDep,
@@ -34,7 +35,7 @@ from fastapi_cache.decorator import cache
 
 router = APIRouter(
     prefix="/products",
-    tags=["products"],
+    tags=["products 🛒🛒"],
     dependencies=[Depends(RateLimiter(limiter=Limiter(Rate(10, Duration.SECOND * 2))))],
 )
 
@@ -51,12 +52,15 @@ async def get_products(
     pagination: PaginationDep,
     sort_by: ProductSortBy,
     sort_order: SortOrder,
+    current_user: OptionalUserDep,
 ):
+    user_id = current_user.id if current_user else None
     try:
         return await products.get_all_products(
             pagination=pagination,
             sort_by=sort_by.name,
             sort_order=sort_order.value,
+            user_id=user_id,
         )
     except WrongSortByException:
         raise WrongSortByHTTPException
@@ -69,9 +73,14 @@ async def get_products(
     response_model=ProductPublic,
 )
 @cache(expire=120)
-async def get_product(product_id: int, products: ProductServiceDep):
+async def get_product(
+    product_id: int,
+    products: ProductServiceDep,
+    current_user: OptionalUserDep,
+):
+    user_id = current_user.id if current_user else None
     try:
-        return await products.get_product(product_id)
+        return await products.get_product(product_id, user_id)
     except ProductNotFoundException:
         raise ProductNotFoundHTTPException
 
@@ -83,9 +92,14 @@ async def get_product(product_id: int, products: ProductServiceDep):
     response_model=list[ProductPublic],
 )
 @cache(expire=120)
-async def get_products_by_category(category_id: int, products: ProductServiceDep):
+async def get_products_by_category(
+    category_id: int,
+    products: ProductServiceDep,
+    current_user: OptionalUserDep,
+):
+    user_id = current_user.id if current_user else None
     try:
-        return await products.get_products_by_category(category_id)
+        return await products.get_products_by_category(category_id, user_id)
     except CategoryNotFoundException:
         raise CategoryNotFoundHTTPException
 

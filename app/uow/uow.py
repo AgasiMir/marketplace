@@ -1,6 +1,7 @@
 from app.domains.categories.repository import CategoryRepository
 from app.domains.users.repository import UserRepository
 from app.domains.products.repository import ProductRepository
+from app.domains.favorites.repository import FavoriteRepository
 
 
 class DBManager:
@@ -11,9 +12,10 @@ class DBManager:
     Гарантирует атомарность операций через автоматическое управление транзакциями.
 
     Атрибуты:
-        wallets (WalletRepository): Репозиторий для работы с кошельками
+        categories (CategoryRepository): Репозиторий для работы с категориями
         users (UserRepository): Репозиторий для работы с пользователями
-        operations (OperationRepository): Репозиторий для работы с операциями
+        products (ProductRepository): Репозиторий для работы с продуктами
+        favorites (FavoriteRepository): Репозиторий для работы с избранными продуктами
     """
 
     def __init__(self, session_factory):
@@ -40,6 +42,7 @@ class DBManager:
         self.categories = CategoryRepository(self.session)
         self.users = UserRepository(self.session)
         self.products = ProductRepository(self.session)
+        self.favorites = FavoriteRepository(self.session)
 
         return self
 

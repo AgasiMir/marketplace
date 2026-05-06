@@ -18,7 +18,11 @@ class ProductService:
         self.db_manager = db_manager
 
     async def get_all_products(
-        self, pagination: Pagination, sort_by: str, sort_order: str
+        self,
+        pagination: Pagination,
+        sort_by: str,
+        sort_order: str,
+        user_id: int | None,
     ) -> list[ProductPublic]:
 
         LIST_OF_SORT_BY = ["id", "name", "price"]
@@ -38,16 +42,18 @@ class ProductService:
         limit = pagination.page_size.value
 
         return await self.db_manager.products.get_all_products(
-            offset=offset,
-            limit=limit,
-            sort_by=sort_by,
+            offset=offset, limit=limit, sort_by=sort_by, user_id=user_id
         )
 
-    async def get_product(self, product_id: int) -> ProductPublic:
-        return await self.db_manager.products.get_product(product_id)
+    async def get_product(self, product_id: int, user_id: int | None) -> ProductPublic:
+        return await self.db_manager.products.get_product(product_id, user_id)
 
-    async def get_products_by_category(self, category_id: int) -> list[ProductPublic]:
-        return await self.db_manager.products.get_products_by_category(category_id)
+    async def get_products_by_category(
+        self, category_id: int, user_id: int | None
+    ) -> list[ProductPublic]:
+        return await self.db_manager.products.get_products_by_category(
+            category_id, user_id
+        )
 
     async def create_product(
         self, create_product: ProductCreate, seller_id: int

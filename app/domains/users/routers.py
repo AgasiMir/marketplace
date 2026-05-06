@@ -25,7 +25,7 @@ from fastapi_limiter.depends import RateLimiter
 
 router = APIRouter(
     prefix="/users",
-    tags=["users"],
+    tags=["users 🔑🔐"],
     dependencies=[Depends(RateLimiter(limiter=Limiter(Rate(5, Duration.SECOND * 2))))],
 )
 

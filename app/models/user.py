@@ -8,7 +8,7 @@ from app.models.mixins import TimestampMixin
 
 
 if TYPE_CHECKING:
-    from app.models import Product
+    from app.models import Product, Favorite
 
 
 class UserRole(StrEnum):
@@ -34,6 +34,7 @@ class User(TimestampMixin, Base):
     )
 
     products: Mapped[list["Product"]] = relationship(back_populates="seller")
+    favorites: Mapped[list["Favorite"]] = relationship(back_populates="user")
 
     def __repr__(self) -> str:
         return self.username

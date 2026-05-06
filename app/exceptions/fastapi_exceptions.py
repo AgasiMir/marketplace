@@ -11,17 +11,17 @@ class MarketplaceHTTPException(HTTPException):
 
 class CategoryNotFoundHTTPException(MarketplaceHTTPException):
     status_code = status.HTTP_404_NOT_FOUND
-    detail = "Category Not Found"
+    detail = "Category Not Found."
 
 
 class UserAlreadyExistsHTTPException(MarketplaceHTTPException):
     status_code = status.HTTP_409_CONFLICT
-    detail = "User With Such Email or Username Already Exists"
+    detail = "User With Such Email or Username Already Exists."
 
 
 class UserNotFoundHTTPException(MarketplaceHTTPException):
     status_code = status.HTTP_404_NOT_FOUND
-    detail = "User Not Found"
+    detail = "User Not Found."
 
 
 class IncorrectCredentialsHTTPException(MarketplaceHTTPException):
@@ -44,29 +44,44 @@ class JWTExpiredSignatureException(MarketplaceHTTPException):
 
 class AdminOnlyHTTPException(MarketplaceHTTPException):
     status_code = status.HTTP_403_FORBIDDEN
-    detail = "Only administrators can perform this action"
+    detail = "Only administrators can perform this action."
 
 
 class SellerOnlyHTTPException(MarketplaceHTTPException):
     status_code = status.HTTP_403_FORBIDDEN
-    detail = "Only sellers can perform this action"
+    detail = "Only sellers can perform this action."
 
 
 class ProductNotFoundHTTPException(MarketplaceHTTPException):
     status_code = status.HTTP_404_NOT_FOUND
-    detail = "Product Not Found"
+    detail = "Product Not Found."
 
 
 class WrongSortByHTTPException(MarketplaceHTTPException):
     status_code = status.HTTP_400_BAD_REQUEST
-    detail = "Invalid sort_by Value"
+    detail = "Invalid sort_by Value."
 
 
 class CurrentProductSellerHTTPException(MarketplaceHTTPException):
     status_code = status.HTTP_403_FORBIDDEN
-    detail = "Only the seller of this current product can perform this action"
+    detail = "Only the seller of this current product can perform this action."
 
 
 class NotEnoughRightsHTTPException(MarketplaceHTTPException):
     status_code = status.HTTP_403_FORBIDDEN
-    detail = "Only the seller of this current product or admin can perform this action"
+    detail = "Only the seller of this current product or admin can perform this action."
+
+
+class FavoriteAlreadyExistsHTTPException(MarketplaceHTTPException):
+    status_code = status.HTTP_409_CONFLICT
+    detail = "Favorite Already Exists."
+
+
+class FavoriteNotFoundHTTPException(MarketplaceHTTPException):
+    status_code = status.HTTP_404_NOT_FOUND
+    detail = "Favorite Not Found."
+
+
+class FavoriteLimitExceededHTTPException(MarketplaceHTTPException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    detail = "Favorite limit exceeded."

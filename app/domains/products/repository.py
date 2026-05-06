@@ -12,7 +12,7 @@ from app.domains.products.schemas import (
     ProductPartialUpdate,
     ProductPublic,
 )
-from app.models import Category, Product
+from app.models import Category, Product, Favorite
 from app.models.user import User
 
 
@@ -20,8 +20,17 @@ class ProductRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    @staticmethod
-    def _from_db(model: Product) -> ProductPublic:
+    async def _from_db(self, model: Product, user_id: int | None) -> ProductPublic:
+        if user_id:
+            current_usres_favorites = await self.session.scalars(
+                select(Favorite).where(Favorite.user_id == user_id)
+            )
+            if current_usres_favorites:
+                for favorite in current_usres_favorites:
+                    if favorite.product_id == model.id:
+                        favorite_product = ProductPublic.model_validate(model)
+                        favorite_product.is_favorite = True
+                        return favorite_product
         return ProductPublic.model_validate(model)
 
     async def _check_if_category_exists(self, category_id: int) -> bool:
@@ -44,7 +53,13 @@ class ProductRepository:
             .with_for_update()
         )
 
-    async def get_all_products(self, offset: int, limit: int, sort_by: str):
+    async def get_all_products(
+        self,
+        offset: int,
+        limit: int,
+        sort_by: str,
+        user_id: int | None,
+    ):
         products = await self.session.scalars(
             select(Product)
             .join(Category, Product.category_id == Category.id)
@@ -61,9 +76,9 @@ class ProductRepository:
             .offset(offset)
         )
 
-        return [self._from_db(product) for product in products.all()]
+        return [await self._from_db(product, user_id) for product in products.all()]
 
-    async def get_product(self, product_id: int):
+    async def get_product(self, product_id: int, user_id: int | None):
         product = await self.session.scalar(
             select(Product)
             .join(Category, Product.category_id == Category.id)
@@ -81,9 +96,13 @@ class ProductRepository:
         if product is None:
             raise ProductNotFoundException
 
-        return self._from_db(product)
+        return await self._from_db(product, user_id)
 
-    async def get_products_by_category(self, category_id: int) -> list[ProductPublic]:
+    async def get_products_by_category(
+        self,
+        category_id: int,
+        user_id: int | None,
+    ) -> list[ProductPublic]:
         if not await self._check_if_category_exists(category_id):
             raise CategoryNotFoundException
 
@@ -101,7 +120,7 @@ class ProductRepository:
             )
         )
 
-        return [self._from_db(product) for product in products.all()]
+        return [await self._from_db(product, user_id) for product in products.all()]
 
     async def create_product(
         self, create_product: ProductCreate, seller_id: int

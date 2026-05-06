@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     GF_SECURITY_ADMIN_USER: str
     GF_SECURITY_ADMIN_PASSWORD: str
 
+    # Максимальное количество товаров в избранном
+    FAVORITES_MAX_ITEMS: int = 100
+
     @property
     def DB_URL(self):
         url = f"{self.DB_DRIVER}://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.POSTGRES_DB}"

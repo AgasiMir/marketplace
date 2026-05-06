@@ -4,7 +4,7 @@ from sqlalchemy import text
 from app.domains.dependencies import DBDep
 
 
-router = APIRouter(prefix="/health", tags=["health"])
+router = APIRouter(prefix="/health", tags=["health 📊📈"])
 
 
 @router.get(

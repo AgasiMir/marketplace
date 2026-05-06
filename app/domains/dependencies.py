@@ -23,7 +23,7 @@ from app.domains.users.service import UserService
 from app.domains.products.service import ProductService
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login", auto_error=False)
 
 # Зависимость для пагинации
 PaginationDep = Annotated[Pagination, Depends()]
@@ -69,6 +69,36 @@ async def get_current_user(db: DBDep, token: str = Depends(oauth2_scheme)):
 
 
 UserDep = Annotated[User, Depends(get_current_user)]
+# ---------------------------------------------------------------
+
+
+# Зависимость для получения текущего пользователя (опционально)
+# ---------------------------------------------------------------
+async def get_optional_current_user(
+    db: DBDep, token: str | None = Depends(oauth2_scheme)
+) -> User | None:
+    """
+    Аналогичен get_current_user, но возвращает None для неаутентифицированных.
+    """
+    if token is None:
+        return None
+
+    try:
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
+        username: str = payload.get("sub")
+        token_type: str | None = payload.get("token_type")
+        if username is None or token_type != "access":
+            return None
+    except (jwt.ExpiredSignatureError, jwt.PyJWTError):
+        return None
+
+    user = await db.users.get_user_by_username(username)
+    return user  # может быть None, если пользователь не найден
+
+
+OptionalUserDep = Annotated[User | None, Depends(get_optional_current_user)]
 # ---------------------------------------------------------------
 
 

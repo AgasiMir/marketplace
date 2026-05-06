@@ -26,6 +26,8 @@ class ProductPublic(BaseModel):
     category: CategoryForProductSchema = Field(description="Категория товара")
     seller: SellerForProductSchema = Field(description="Имя продавца")
 
+    is_favorite: bool = Field(default=False)
+
     model_config = ConfigDict(from_attributes=True)
 
 
