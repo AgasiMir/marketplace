@@ -45,18 +45,22 @@ async def category_user_product(db: DBManager):
     db.add(product)
     await db.commit()
 
+    assert category.__repr__() == category.name
+    assert user.__repr__() == user.username
+    assert product.__repr__() == f"{product.name}, {product.price}"
+
     return category, user, product
 
 
 async def test_get_all_products(category_user_product, db: DBManager):
-    res = await db.products.get_all_products(0, 10, "price")
+    res = await db.products.get_all_products(0, 10, "price", None)
     assert isinstance(res[0], ProductPublic)
 
 
 async def test_get_products_by_category(category_user_product, db: DBManager):
-    category, _, product = category_user_product
+    category, user, product = category_user_product
 
-    res = await db.products.get_products_by_category(category.id)
+    res = await db.products.get_products_by_category(category.id, user.id)
 
     assert isinstance(res[0], ProductPublic)
 
@@ -67,20 +71,20 @@ async def test_get_products_by_non_existing_category(
     category, _, product = category_user_product
 
     with pytest.raises(CategoryNotFoundException):
-        await db.products.get_products_by_category(1234)
+        await db.products.get_products_by_category(1234, None)
 
 
 async def test_get_product(category_user_product, db: DBManager):
     _, _, product = category_user_product
 
-    res = await db.products.get_product(product.id)
+    res = await db.products.get_product(product.id, None)
     assert isinstance(res, ProductPublic)
 
 
 async def test_get_non_existing_product(db: DBManager):
 
     with pytest.raises(ProductNotFoundException):
-        await db.products.get_product(12345)
+        await db.products.get_product(12345, 2)
 
 
 async def test_create_product(category_user_product, db: DBManager):

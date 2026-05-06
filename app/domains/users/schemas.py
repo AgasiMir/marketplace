@@ -43,6 +43,33 @@ class UserCreate(BaseModel):
         description="Роль пользователя",
     )
 
+    @field_validator("first_name")
+    def check_if_first_name_is_empty(cls, value: str) -> str:
+        value = value.strip()
+
+        if len(value) == 0:
+            raise ValueError("Имя не может быть пустым")
+
+        return value
+
+    @field_validator("last_name")
+    def check_if_last_name_is_empty(cls, value: str) -> str:
+        value = value.strip()
+
+        if len(value) == 0:
+            raise ValueError("Фамилия не может быть пустой")
+
+        return value
+
+    @field_validator("username")
+    def check_if_username_is_empty(cls, value: str) -> str:
+        value = value.strip()
+
+        if len(value) == 0:
+            raise ValueError("Username не может быть пустым")
+
+        return value
+
     @field_validator("password", mode="after")
     def hash_password(cls, value: str) -> str:
         """Хеширует пароль перед сохранением"""
@@ -85,6 +112,34 @@ class UserPartialUpdate(BaseModel):
         max_length=255,
         description="Пароль (минимум 8 символов, максимум - 255)",
     )
+
+    @field_validator("first_name")
+    def check_if_first_name_is_empty(cls, value: str) -> str:
+        if value:
+            value = value.strip()
+
+            if len(value) == 0:
+                raise ValueError("Имя не может быть пустым")
+        return value
+
+    @field_validator("last_name")
+    def check_if_last_name_is_empty(cls, value: str) -> str:
+        if value:
+            value = value.strip()
+
+            if len(value) == 0:
+                raise ValueError("Фамилия не может быть пустой")
+        return value
+
+    @field_validator("username")
+    def check_if_username_is_empty(cls, value: str) -> str:
+
+        if value:
+            value = value.strip()
+
+            if len(value) == 0:
+                raise ValueError("Username не может быть пустым")
+        return value
 
     @field_validator("password", mode="after")
     def hash_password(cls, value: str) -> str:

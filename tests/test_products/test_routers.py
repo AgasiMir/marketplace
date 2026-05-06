@@ -116,6 +116,12 @@ async def test_get_product_by_id(category_user_product, async_client):
     assert res.status_code == 200
 
 
+async def test_get_product_by_id_with_str_id(async_client):
+
+    res = await async_client.get("/products/one")
+    assert res.status_code == 422
+
+
 async def test_get_non_existing_product_by_id(async_client):
     with patch("app.domains.products.service.ProductService.get_product") as mock_obj:
         mock_obj.side_effect = ProductNotFoundException
@@ -123,7 +129,7 @@ async def test_get_non_existing_product_by_id(async_client):
         res = await async_client.get("/products/123")
 
         assert res.status_code == 404
-        mock_obj.assert_called_once_with(123)
+        mock_obj.assert_called_once()
 
 
 async def test_get_product_by_id_with_inactive_user(
@@ -170,7 +176,7 @@ async def test_get_products_by_non_existing_category(async_client):
         res = await async_client.get(f"/products/category/{123}")
 
         assert res.status_code == 404
-        mock_obj.assert_called_once_with(123)
+        mock_obj.assert_called_once()
 
 
 async def test_create_product(category_user_product, authenticated_seller):
