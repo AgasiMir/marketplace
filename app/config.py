@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     REDIS_HOST: str
     REDIS_PORT: int
 
+    GF_SECURITY_ADMIN_USER: str
+    GF_SECURITY_ADMIN_PASSWORD: str
+
     @property
     def DB_URL(self):
         url = f"{self.DB_DRIVER}://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.POSTGRES_DB}"

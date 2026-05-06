@@ -1,11 +1,24 @@
 services:
  
+  marketplace:
+    build: .
+    container_name: marketplace_app
+    env_file: .env.prod
+    ports:
+      - "8000:8000"
+    networks:
+      - marketplace_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    command: bash -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4"
   
   postgres:
       image: postgres:17
       container_name: marketplace
       env_file: 
-        .env.dev
+        .env.prod
       ports:
         - "6432:5432"  
       volumes:
@@ -41,6 +54,26 @@ services:
     image: redis/redisinsight
     ports:
       - 5540:5540
+    networks:
+      - marketplace_network
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/rules.yml:/etc/prometheus/rules.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - marketplace_network
+
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.prod
     networks:
       - marketplace_network
 
