@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, Body
+from fastapi import APIRouter, Depends, Request, status, Body
 from fastapi.security import OAuth2PasswordRequestForm
 from app.domains.users.schemas import (
     RefreshTokenRequest,
@@ -80,12 +80,14 @@ async def create_user(
 )
 async def login(
     users: UserServiceDep,
+    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
 ):
     try:
         return await users.login(
             form_data.username,
             form_data.password,
+            request.client.host,
         )
     except IncorrectCredentialsException:
         raise IncorrectCredentialsHTTPException

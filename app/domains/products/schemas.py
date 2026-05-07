@@ -101,3 +101,27 @@ class ProductPartialUpdate(BaseModel):
         default=None,
         description="ID категории, к которой относится товар",
     )
+
+
+class ProductCreatePublic(BaseModel):
+    message: str
+    product_id: int
+    product_name: str
+    product_price: float
+    description: str | None = None
+
+
+class ProductPartialUpdatePublic(BaseModel):
+    message: str
+    product_id: int
+    product_name: str
+    product_price: float
+    description: str | None = None
+
+
+class ProductDeletePublic(BaseModel):
+    message: str
+    product_id: int
+    product_name: str
+    product_price: float
+    description: str | None = None

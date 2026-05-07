@@ -47,7 +47,7 @@ async def test_create_user(db: DBManager):
 
 
 async def test_login(test_user, db: DBManager):
-    res = await UserService(db).login(test_user.username, "1234abcd")
+    res = await UserService(db).login(test_user.username, "1234abcd", "127.0.0.1")
     assert res.get("access_token") is not None
 
 
@@ -65,7 +65,7 @@ async def test_delete_user(test_user, db: DBManager):
 
 
 async def test_refresh_token(test_user, db: DBManager):
-    res = await UserService(db).login(test_user.username, "1234abcd")
+    res = await UserService(db).login(test_user.username, "1234abcd", "127.0.0.1")
     refresh_token = res.get("refresh_token")
 
     await UserService(db).refresh_token(refresh_token)

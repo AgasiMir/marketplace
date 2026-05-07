@@ -1,7 +1,10 @@
 from fastapi import APIRouter, Body, Depends, status
 from app.domains.products.schemas import (
     ProductCreate,
+    ProductCreatePublic,
+    ProductDeletePublic,
     ProductPartialUpdate,
+    ProductPartialUpdatePublic,
     ProductPublic,
 )
 from app.domains.dependencies import (
@@ -109,6 +112,7 @@ async def get_products_by_category(
     status_code=status.HTTP_201_CREATED,
     summary="Create product",
     description="Эндпойнт для создания товара. Доступен только продавцу",
+    response_model=ProductCreatePublic,
 )
 async def create_product(
     current_seller: SellerDep,
@@ -130,7 +134,12 @@ async def create_product(
     ),
 ) -> dict:
     try:
-        return await products.create_product(create_product, current_seller.id)
+        return await products.create_product(
+            create_product,
+            seller_id=current_seller.id,
+            email=current_seller.email,
+            username=current_seller.username,
+        )
     except CategoryNotFoundException:
         raise CategoryNotFoundHTTPException
 
@@ -139,6 +148,7 @@ async def create_product(
     "/{product_id}",
     summary="Partial update product",
     description="Эндпойнт для частичного обновления товара. Доступен только продавцу",
+    response_model=ProductPartialUpdatePublic,
 )
 async def partial_update_product(
     current_seller: SellerDep,
@@ -151,6 +161,8 @@ async def partial_update_product(
             product_id=product_id,
             patch_product=patch_product,
             seller_id=current_seller.id,
+            email=current_seller.email,
+            username=current_seller.username,
         )
     except ProductNotFoundException:
         raise ProductNotFoundHTTPException
@@ -162,6 +174,7 @@ async def partial_update_product(
     "/{product_id}",
     summary="Delete product",
     description="Эндпойнт для удаления товара. Доступен только продавцу или администратору",
+    response_model=ProductDeletePublic,
 )
 async def delete_product(
     product_id: int,
@@ -169,7 +182,13 @@ async def delete_product(
     current_user: UserDep,
 ) -> dict:
     try:
-        return await products.delete_product(product_id, current_user)
+        return await products.delete_product(
+            product_id=product_id,
+            user_id=current_user.id,
+            email=current_user.email,
+            username=current_user.username,
+            user_role=current_user.role,
+        )
     except ProductNotFoundException:
         raise ProductNotFoundHTTPException
     except NotEnoughRightsException:

@@ -24,6 +24,18 @@ class Settings(BaseSettings):
     # Максимальное количество товаров в избранном
     FAVORITES_MAX_ITEMS: int = 100
 
+    RABBITMQ_DEFAULT_USER: str
+    RABBITMQ_DEFAULT_PASS: str
+    RABBITMQ_DEFAULT_PORT: int
+    RABBITMQ_DEFAULT_HOST: str
+
+    MailDEV_HOST: str
+
+    @property
+    def RABBITMQ_URL(self):
+        url = f"amqp://{self.RABBITMQ_DEFAULT_USER}:{self.RABBITMQ_DEFAULT_PASS}@{self.RABBITMQ_DEFAULT_HOST}:{self.RABBITMQ_DEFAULT_PORT}/"
+        return url
+
     @property
     def DB_URL(self):
         url = f"{self.DB_DRIVER}://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.POSTGRES_DB}"

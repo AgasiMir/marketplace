@@ -9,7 +9,10 @@ from app.exceptions.python_exceptions import (
 
 from app.domains.products.schemas import (
     ProductCreate,
+    ProductCreatePublic,
+    ProductDeletePublic,
     ProductPartialUpdate,
+    ProductPartialUpdatePublic,
     ProductPublic,
 )
 from app.models import Category, Product, Favorite
@@ -124,7 +127,7 @@ class ProductRepository:
 
     async def create_product(
         self, create_product: ProductCreate, seller_id: int
-    ) -> dict:
+    ) -> ProductCreatePublic:
         if not await self._check_if_category_exists(create_product.category_id):
             raise CategoryNotFoundException
 
@@ -132,14 +135,20 @@ class ProductRepository:
         self.session.add(product)
         await self.session.flush()
 
-        return {"message": "Product created"}
+        return {
+            "message": "Product created",
+            "product_name": product.name,
+            "product_id": product.id,
+            "product_price": product.price,
+            "product_description": product.description,
+        }
 
     async def partial_update_product(
         self,
         product_id: int,
         patch_product: ProductPartialUpdate,
         seller_id: int,
-    ) -> dict:
+    ) -> ProductPartialUpdatePublic:
         product = await self._select_product_for_update(product_id)
 
         if not product:
@@ -151,11 +160,17 @@ class ProductRepository:
         for key, value in patch_product.model_dump(exclude_unset=True).items():
             setattr(product, key, value)
 
-        return {"message": "Product updated"}
+        return {
+            "message": "Product updated",
+            "product_name": product.name,
+            "product_id": product.id,
+            "product_price": product.price,
+            "product_description": product.description,
+        }
 
     async def delete_product(
         self, product_id: int, user_role: str, user_id: int
-    ) -> dict:
+    ) -> ProductDeletePublic:
         product = await self._select_product_for_update(product_id)
 
         if not product:
@@ -164,5 +179,32 @@ class ProductRepository:
         if user_role == "seller" and product.seller_id != user_id:
             raise CurrentProductSellerException
 
-        product.is_active = False
-        return {"message": "Product deleted"}
+        if user_role == "seller":
+            product.is_active = False
+
+            return {
+                "message": "Product deleted",
+                "product_name": product.name,
+                "product_id": product.id,
+                "product_price": product.price,
+                "product_description": product.description,
+            }
+
+        if user_role == "admin":
+            product = await self.session.scalar(
+                select(Product)
+                .options(joinedload(Product.seller))
+                .where(Product.id == product_id, Product.is_active)
+            )
+
+            product.is_active = False
+
+            return {
+                "message": "Product deleted",
+                "product_name": product.name,
+                "product_id": product.id,
+                "product_price": product.price,
+                "product_description": product.description,
+                "seller_email": product.seller.email,
+                "seller_username": product.seller.username,
+            }

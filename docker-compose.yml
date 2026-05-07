@@ -57,6 +57,74 @@ services:
     networks:
       - marketplace_network
 
+
+  rabbitmq:
+      image: rabbitmq:4.1.1-management-alpine
+      container_name: marketplace_rabbit
+      hostname: rabbitmq
+      ports:
+        - "5672:5672"
+        - "15672:15672"
+      volumes:
+        - rabbitmq_data:/var/lib/rabbitmq
+      networks:
+        - marketplace_network 
+      restart: unless-stopped
+      env_file: .env.dev
+      healthcheck:
+        test: [ "CMD", "rabbitmq-diagnostics", "check_port_connectivity" ]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+
+
+  marketplace_celery_service:
+    build: .
+    container_name: marketplace_celery
+    env_file:
+      - .env.dev
+    networks:
+      - marketplace_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    command: celery -A app.tasks.celery_app:celery_instance worker --loglevel=info
+  
+
+  marketplace_flower_service:
+    build: .
+    container_name: marketplace_flower
+    env_file:
+      - .env.prod
+    ports:
+      - "5555:5555"
+    networks:
+      - marketplace_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    command: celery --app=app.tasks.celery_app:celery_instance flower
+
+
+  maildev:
+    image: maildev/maildev
+    environment:
+      - TZ=Europe/Moscow
+      - MAILDEV_WEB_PORT=1080
+      - MAILDEV_SMTP_PORT=1025
+    ports:
+      - "1080:1080"
+      - "1025:1025"
+    logging:
+      driver: 
+        "json-file"
+      options:
+        max-size: "1m"
+    networks:
+      - marketplace_network
+
   prometheus:
     image: prom/prometheus:v2.54.1
     volumes:
@@ -81,6 +149,7 @@ services:
 volumes:
   marketplace_data:
   redis_data:
+  rabbitmq_data:
 
 networks:
   marketplace_network:
