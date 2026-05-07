@@ -1,11 +1,10 @@
 from fastapi import APIRouter, Body, Depends, status
 from app.domains.products.schemas import (
+    ProductAdminDeletePublic,
     ProductCreate,
-    ProductCreatePublic,
-    ProductDeletePublic,
     ProductPartialUpdate,
-    ProductPartialUpdatePublic,
     ProductPublic,
+    ProductURDPublic,
 )
 from app.domains.dependencies import (
     OptionalUserDep,
@@ -112,7 +111,7 @@ async def get_products_by_category(
     status_code=status.HTTP_201_CREATED,
     summary="Create product",
     description="Эндпойнт для создания товара. Доступен только продавцу",
-    response_model=ProductCreatePublic,
+    response_model=ProductURDPublic,
 )
 async def create_product(
     current_seller: SellerDep,
@@ -148,7 +147,7 @@ async def create_product(
     "/{product_id}",
     summary="Partial update product",
     description="Эндпойнт для частичного обновления товара. Доступен только продавцу",
-    response_model=ProductPartialUpdatePublic,
+    response_model=ProductURDPublic,
 )
 async def partial_update_product(
     current_seller: SellerDep,
@@ -174,7 +173,7 @@ async def partial_update_product(
     "/{product_id}",
     summary="Delete product",
     description="Эндпойнт для удаления товара. Доступен только продавцу или администратору",
-    response_model=ProductDeletePublic,
+    response_model=ProductURDPublic | ProductAdminDeletePublic,
 )
 async def delete_product(
     product_id: int,

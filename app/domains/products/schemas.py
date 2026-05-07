@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 from app.domains.categories.schemas import CategoryForProductSchema
 from app.domains.users.schemas import SellerForProductSchema
@@ -103,25 +103,14 @@ class ProductPartialUpdate(BaseModel):
     )
 
 
-class ProductCreatePublic(BaseModel):
+class ProductURDPublic(BaseModel):
     message: str
-    product_id: int
-    product_name: str
-    product_price: float
+    id: int
+    name: str
+    price: float
     description: str | None = None
 
 
-class ProductPartialUpdatePublic(BaseModel):
-    message: str
-    product_id: int
-    product_name: str
-    product_price: float
-    description: str | None = None
-
-
-class ProductDeletePublic(BaseModel):
-    message: str
-    product_id: int
-    product_name: str
-    product_price: float
-    description: str | None = None
+class ProductAdminDeletePublic(ProductURDPublic):
+    seller_email: EmailStr
+    seller_username: str

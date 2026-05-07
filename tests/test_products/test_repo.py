@@ -1,7 +1,11 @@
 import pytest
 
 from app.auth import hash_password
-from app.domains.products.schemas import ProductPartialUpdate, ProductPublic
+from app.domains.products.schemas import (
+    ProductPartialUpdate,
+    ProductPublic,
+    ProductURDPublic,
+)
 from app.exceptions.python_exceptions import (
     CategoryNotFoundException,
     CurrentProductSellerException,
@@ -102,8 +106,8 @@ async def test_create_product(category_user_product, db: DBManager):
 
     res = await db.products.create_product(ProductCreate(**product_data), user.id)
 
-    assert isinstance(res, dict)
-    assert res["message"] == "Product created"
+    assert isinstance(res, ProductURDPublic)
+    assert res.message == "Product created"
 
 
 async def test_create_product_with_non_existing_category(
@@ -131,7 +135,8 @@ async def test_partial_update_product(category_user_product, db: DBManager):
     data = ProductPartialUpdate(**{"name": "New Name"})
 
     res = await db.products.partial_update_product(product.id, data, user.id)
-    assert res["message"] == "Product updated"
+    assert isinstance(res, ProductURDPublic)
+    assert res.message == "Product updated"
 
 
 async def test_partial_update_non_existing_product(db: DBManager):
@@ -152,7 +157,8 @@ async def test_partial_update_product_with_other_seller(
 async def test_delete_product(category_user_product, db: DBManager):
     _, user, product = category_user_product
     res = await db.products.delete_product(product.id, user.role, user.id)
-    assert res["message"] == "Product deleted"
+    assert isinstance(res, ProductURDPublic)
+    assert res.message == "Product deleted"
 
 
 async def test_delete_non_existing_product(db: DBManager):
