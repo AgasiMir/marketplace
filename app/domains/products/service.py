@@ -6,6 +6,7 @@ from app.domains.products.schemas import (
     ProductPublic,
     ProductURDPublic,
 )
+from app.domains.reviews.schemas import ReviewPublic
 from app.email import send_email_async
 from app.exceptions.python_exceptions import (
     NotEnoughRightsException,
@@ -141,3 +142,6 @@ class ProductService:
                     \nОписание товара: {res.description}""",
                 )
                 return res
+
+    async def get_product_reviews(self, product_id: int) -> list[ReviewPublic]:
+        return await self.db_manager.products.get_product_reviews(product_id)

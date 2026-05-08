@@ -1,6 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.domains.reviews.schemas import ReviewPublic
 from app.exceptions.python_exceptions import (
     CategoryNotFoundException,
     CurrentProductSellerException,
@@ -14,7 +15,7 @@ from app.domains.products.schemas import (
     ProductPublic,
     ProductURDPublic,
 )
-from app.models import Category, Product, Favorite
+from app.models import Category, Product, Favorite, Review
 from app.models.user import User
 
 
@@ -215,3 +216,27 @@ class ProductRepository:
             }
 
             return ProductAdminDeletePublic(**data)
+
+    async def get_product_reviews(self, product_id: int) -> list[ReviewPublic]:
+        product = await self.session.scalar(
+            select(Product)
+            .join(Product.category)
+            .join(Product.seller)
+            .where(
+                Product.id == product_id,
+                Product.is_active,
+                Category.is_active,
+                User.is_active,
+            )
+        )
+        if not product:
+            raise ProductNotFoundException
+
+        reviews = await self.session.scalars(
+            select(Review).where(
+                Review.product_id == product_id,
+                Review.is_active,
+            )
+        )
+
+        return [ReviewPublic.model_validate(review) for review in reviews.all()]

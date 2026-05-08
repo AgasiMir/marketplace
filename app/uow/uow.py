@@ -2,6 +2,7 @@ from app.domains.categories.repository import CategoryRepository
 from app.domains.users.repository import UserRepository
 from app.domains.products.repository import ProductRepository
 from app.domains.favorites.repository import FavoriteRepository
+from app.domains.reviews.repository import ReviewRepository
 
 
 class DBManager:
@@ -16,6 +17,7 @@ class DBManager:
         users (UserRepository): Репозиторий для работы с пользователями
         products (ProductRepository): Репозиторий для работы с продуктами
         favorites (FavoriteRepository): Репозиторий для работы с избранными продуктами
+        reviews (ReviewRepository): Репозиторий для работы с отзывами
     """
 
     def __init__(self, session_factory):
@@ -43,6 +45,7 @@ class DBManager:
         self.users = UserRepository(self.session)
         self.products = ProductRepository(self.session)
         self.favorites = FavoriteRepository(self.session)
+        self.reviews = ReviewRepository(self.session)
 
         return self
 

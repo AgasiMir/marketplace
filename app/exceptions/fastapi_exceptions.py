@@ -85,3 +85,13 @@ class FavoriteNotFoundHTTPException(MarketplaceHTTPException):
 class FavoriteLimitExceededHTTPException(MarketplaceHTTPException):
     status_code = status.HTTP_400_BAD_REQUEST
     detail = "Favorite limit exceeded."
+
+
+class ReviewNotFoundHTTPException(MarketplaceHTTPException):
+    status_code = status.HTTP_404_NOT_FOUND
+    detail = "Review Not Found."
+
+
+class OnlyAuthorOrAdminCanDeleteReviewHTTPException(MarketplaceHTTPException):
+    status_code = status.HTTP_403_FORBIDDEN
+    detail = "Only the author of this review or admin can perform this action."

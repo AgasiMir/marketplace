@@ -27,6 +27,7 @@ class ProductPublic(BaseModel):
     seller: SellerForProductSchema = Field(description="Имя продавца")
 
     is_favorite: bool = Field(default=False)
+    rating: float = Field(description="Рейтинг товара")
 
     model_config = ConfigDict(from_attributes=True)
 

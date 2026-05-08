@@ -1,6 +1,15 @@
 from typing import TYPE_CHECKING
 from decimal import Decimal
-from sqlalchemy import Integer, String, Boolean, Numeric, ForeignKey, CheckConstraint
+from sqlalchemy import (
+    Float,
+    Integer,
+    String,
+    Boolean,
+    Numeric,
+    ForeignKey,
+    CheckConstraint,
+    text,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.mixins import TimestampMixin
 
@@ -8,7 +17,7 @@ from app.core.database import Base
 
 
 if TYPE_CHECKING:
-    from app.models import Category, User, Favorite
+    from app.models import Category, User, Favorite, Review
 
 
 class Product(TimestampMixin, Base):
@@ -35,10 +44,12 @@ class Product(TimestampMixin, Base):
         nullable=False,
         index=True,
     )
+    rating: Mapped[float] = mapped_column(Float, default=0.0, server_default=text("0"))
 
     category: Mapped["Category"] = relationship(back_populates="products")
     seller: Mapped["User"] = relationship(back_populates="products")
     favorites: Mapped[list["Favorite"]] = relationship(back_populates="product")
+    reviews: Mapped[list["Review"]] = relationship(back_populates="product")
 
     def __repr__(self) -> str:
         return f"{self.name}, {self.price}"

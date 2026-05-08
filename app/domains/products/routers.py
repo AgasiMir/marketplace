@@ -17,6 +17,7 @@ from app.domains.dependencies import (
 from pyrate_limiter import Duration, Limiter, Rate
 from fastapi_limiter.depends import RateLimiter
 
+from app.domains.reviews.schemas import ReviewPublic
 from app.exceptions.fastapi_exceptions import (
     CategoryNotFoundHTTPException,
     CurrentProductSellerHTTPException,
@@ -194,3 +195,11 @@ async def delete_product(
         raise NotEnoughRightsHTTPException
     except CurrentProductSellerException:
         raise CurrentProductSellerHTTPException
+
+
+@router.get("/{product_id}/reviews", response_model=list[ReviewPublic])
+async def get_product_reviews(product_id: int, products: ProductServiceDep):
+    try:
+        return await products.get_product_reviews(product_id=product_id)
+    except ProductNotFoundException:
+        raise ProductNotFoundHTTPException

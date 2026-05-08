@@ -344,3 +344,21 @@ async def test_delete_product_with_other_seller(authenticated_seller):
         res = await authenticated_seller.delete(f"/products/{123}")
         assert res.status_code == 403
         mock_obj.assert_called_once()
+
+
+async def test_get_product_reviews(category_user_product, async_client):
+    _, _, product = category_user_product
+    res = await async_client.get(f"/products/{product.id}/reviews")
+    assert res.status_code == 200
+
+
+async def test_get_product_reviews_for_non_existing_product(async_client):
+
+    with patch(
+        "app.domains.products.service.ProductService.get_product_reviews"
+    ) as mock_obj:
+        mock_obj.side_effect = ProductNotFoundException
+
+        res = await async_client.get(f"/products/{1234}/reviews")
+        assert res.status_code == 404
+        mock_obj.assert_called_once()

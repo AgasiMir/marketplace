@@ -21,6 +21,7 @@ from app.utils.utils import Pagination
 from app.domains.categories.service import CategoryService
 from app.domains.users.service import UserService
 from app.domains.products.service import ProductService
+from app.domains.reviews.service import ReviewService
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login", auto_error=False)
@@ -153,4 +154,14 @@ async def get_product_service(db_manager: DBDep) -> ProductService:
 
 
 ProductServiceDep = Annotated[ProductService, Depends(get_product_service)]
+# ---------------------------------------------------------------
+
+
+# Зависимость для получения сервиса отзывов
+# ---------------------------------------------------------------
+async def get_review_service(db_manager: DBDep) -> ReviewService:
+    return ReviewService(db_manager=db_manager)
+
+
+ReviewServiceDep = Annotated[ReviewService, Depends(get_review_service)]
 # ---------------------------------------------------------------

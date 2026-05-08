@@ -51,3 +51,11 @@ class FavoriteNotFoundException(MarketplaceException):
 
 class FavoriteLimitExceededException(MarketplaceException):
     detail = "Favorite limit exceeded."
+
+
+class ReviewNotFoundException(MarketplaceException):
+    detail = "Review Not Found."
+
+
+class OnlyAuthorOrAdminCanDeleteReviewException(MarketplaceException):
+    detail = "Only the author of this review or admin can perform this action."

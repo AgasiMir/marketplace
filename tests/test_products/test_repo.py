@@ -161,6 +161,14 @@ async def test_delete_product(category_user_product, db: DBManager):
     assert res.message == "Product deleted"
 
 
+async def test_delete_product_with_admin_role(category_user_product, db: DBManager):
+    _, user, product = category_user_product
+    user.role = "admin"
+    res = await db.products.delete_product(product.id, user.role, user.id)
+    assert isinstance(res, ProductURDPublic)
+    assert res.message == "Product deleted"
+
+
 async def test_delete_non_existing_product(db: DBManager):
     with pytest.raises(ProductNotFoundException):
         await db.products.delete_product(1234, "seller", 1)
@@ -170,3 +178,14 @@ async def test_delete_product_with_other_seller(category_user_product, db: DBMan
     _, _, product = category_user_product
     with pytest.raises(CurrentProductSellerException):
         await db.products.delete_product(product.id, "seller", 2)
+
+
+async def test_get_product_reviews(category_user_product, db: DBManager):
+    *_, product = category_user_product
+    res = await db.products.get_product_reviews(product.id)
+    assert isinstance(res, list)
+
+
+async def test_get_non_existing_product_reviews(db: DBManager):
+    with pytest.raises(ProductNotFoundException):
+        await db.products.get_product_reviews(12345)
