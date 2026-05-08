@@ -45,8 +45,9 @@ class ReviewRepository:
                         WHERE product_id = :product_id
                         AND is_active = True""").params(product_id=product_id)
 
-        avg_rating = await self.session.scalar(stmt)
+        avg_rating = await self.session.scalar(stmt) or 0.0
         product.rating = round(avg_rating, 2)
+        await self.session.flush()
 
     async def create_review(
         self,
@@ -60,6 +61,7 @@ class ReviewRepository:
         review = await self._check_if_review_exists(user_id, create_review.product_id)
 
         if review:
+            review.is_active = True
             for key, value in create_review.model_dump(exclude_unset=True).items():
                 setattr(review, key, value)
 

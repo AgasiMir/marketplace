@@ -24,7 +24,7 @@ from app.main import app
 from app.config import settings
 from app.domains.dependencies import get_db
 from app.core.database import Base, engine_null_pull, async_session_null_pool
-from app.models import *
+from app.models import Category, User, Product, Favorite, Review
 from app.uow.uow import DBManager
 
 
@@ -174,8 +174,8 @@ async def register_buyer(async_client):
     data = {
         "first_name": "John",
         "last_name": "Doe",
-        "username": "JD",
-        "email": "user@example.com",
+        "username": "JD_buyer",
+        "email": "buyer@example.com",
         "password": "1234abcd",
         "role": "buyer",
     }
@@ -191,7 +191,7 @@ async def authenticated_buyer(register_buyer, async_client):
 
     response = await async_client.post(
         "/users/login",
-        data={"username": "JD", "password": "1234abcd"},
+        data={"username": "JD_buyer", "password": "1234abcd"},
     )
 
     assert response.status_code == 200, f"Failed to get token: {response.text}"
@@ -207,8 +207,8 @@ async def register_seller(async_client):
     data = {
         "first_name": "John",
         "last_name": "Doe",
-        "username": "JD",
-        "email": "user@example.com",
+        "username": "JD_seller",
+        "email": "seller@example.com",
         "password": "1234abcd",
         "role": "seller",
     }
@@ -224,7 +224,7 @@ async def authenticated_seller(register_seller, async_client):
 
     response = await async_client.post(
         "/users/login",
-        data={"username": "JD", "password": "1234abcd"},
+        data={"username": "JD_seller", "password": "1234abcd"},
     )
 
     assert response.status_code == 200, f"Failed to get token: {response.text}"
@@ -237,7 +237,6 @@ async def authenticated_seller(register_seller, async_client):
 
 @pytest.fixture()
 async def register_admin(db: DBManager):
-    from app.models import User
 
     data = {
         "first_name": "Jane",
@@ -267,3 +266,44 @@ async def authenticated_admin(register_admin, async_client):
     assert token is not None, "Token is missing in response"
     async_client.headers["Authorization"] = f"Bearer {token}"
     yield async_client
+
+
+@pytest.fixture
+async def category_user_product(db: DBManager):
+    category_data = {"name": "Test Category"}
+    user_data = {
+        "first_name": "Test_Name",
+        "last_name": "Test_Last_Name",
+        "username": "Test_User",
+        "email": "testuser@example.com",
+        "password": hash_password("1234abcd"),
+        "role": "seller",
+    }
+
+    category = Category(**category_data)
+    db.add(category)
+    await db.commit()
+
+    user = User(**user_data)
+    db.add(user)
+    await db.commit()
+
+    product_data = {
+        "name": "Test Product",
+        "description": None,
+        "price": 10.00,
+        "image_url": "",
+        "stock": 10,
+        "category_id": category.id,
+        "seller_id": user.id,
+    }
+
+    product = Product(**product_data)
+    db.add(product)
+    await db.commit()
+
+    assert category.__repr__() == category.name
+    assert user.__repr__() == user.username
+    assert product.__repr__() == f"{product.name}, {product.price}"
+
+    return category, user, product

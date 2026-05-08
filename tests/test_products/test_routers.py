@@ -1,6 +1,5 @@
-import pytest
 from unittest.mock import patch
-from app.auth import create_access_token, hash_password
+from app.auth import create_access_token
 from app.exceptions.python_exceptions import (
     CategoryNotFoundException,
     CurrentProductSellerException,
@@ -8,45 +7,6 @@ from app.exceptions.python_exceptions import (
     ProductNotFoundException,
     WrongSortByException,
 )
-from app.uow.uow import DBManager
-from app.models import Product, Category, User
-
-
-@pytest.fixture
-async def category_user_product(db: DBManager):
-    category_data = {"name": "Test Category"}
-    user_data = {
-        "first_name": "Test_Name",
-        "last_name": "Test_Last_Name",
-        "username": "Test_User",
-        "email": "testuser@example.com",
-        "password": hash_password("1234abcd"),
-        "role": "seller",
-    }
-
-    category = Category(**category_data)
-    db.add(category)
-    await db.commit()
-
-    user = User(**user_data)
-    db.add(user)
-    await db.commit()
-
-    product_data = {
-        "name": "Test Product",
-        "description": None,
-        "price": 10.00,
-        "image_url": "",
-        "stock": 10,
-        "category_id": category.id,
-        "seller_id": user.id,
-    }
-
-    product = Product(**product_data)
-    db.add(product)
-    await db.commit()
-
-    return category, user, product
 
 
 async def test_get_all_products(category_user_product, async_client):

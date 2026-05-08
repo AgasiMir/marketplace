@@ -73,7 +73,7 @@ async def test_create_already_existing_user(async_client):
 async def test_login(authenticated_buyer):
     res = await authenticated_buyer.post(
         "/users/login",
-        data={"username": "JD", "password": "1234abcd"},
+        data={"username": "JD_buyer", "password": "1234abcd"},
     )
 
     assert res.status_code == 200
@@ -96,7 +96,7 @@ async def test_login_with_wrong_credentials(async_client):
 async def test_refresh_token(authenticated_buyer):
     res = await authenticated_buyer.post(
         "/users/login",
-        data={"username": "JD", "password": "1234abcd"},
+        data={"username": "JD_buyer", "password": "1234abcd"},
     )
 
     refresh_token = res.json()["refresh_token"]

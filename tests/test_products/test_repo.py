@@ -1,6 +1,6 @@
 import pytest
 
-from app.auth import hash_password
+
 from app.domains.products.schemas import (
     ProductPartialUpdate,
     ProductPublic,
@@ -11,49 +11,7 @@ from app.exceptions.python_exceptions import (
     CurrentProductSellerException,
     ProductNotFoundException,
 )
-from app.models import Category, User, Product
 from app.uow.uow import DBManager
-
-
-@pytest.fixture
-async def category_user_product(db: DBManager):
-    category_data = {"name": "Test Category"}
-    user_data = {
-        "first_name": "Test_Name",
-        "last_name": "Test_Last_Name",
-        "username": "Test_User",
-        "email": "testuser@example.com",
-        "password": hash_password("1234abcd"),
-        "role": "seller",
-    }
-
-    category = Category(**category_data)
-    db.add(category)
-    await db.commit()
-
-    user = User(**user_data)
-    db.add(user)
-    await db.commit()
-
-    product_data = {
-        "name": "Test Product",
-        "description": None,
-        "price": 10.00,
-        "image_url": "",
-        "stock": 10,
-        "category_id": category.id,
-        "seller_id": user.id,
-    }
-
-    product = Product(**product_data)
-    db.add(product)
-    await db.commit()
-
-    assert category.__repr__() == category.name
-    assert user.__repr__() == user.username
-    assert product.__repr__() == f"{product.name}, {product.price}"
-
-    return category, user, product
 
 
 async def test_get_all_products(category_user_product, db: DBManager):
