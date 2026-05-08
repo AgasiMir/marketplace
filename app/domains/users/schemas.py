@@ -169,3 +169,9 @@ class SellerForProductSchema(BaseModel):
     username: str = Field(description="Имя продавца")
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class SellerForReviewSchema(BaseModel):
+    username: str = Field(description="Имя продавца")
+
+    model_config = ConfigDict(from_attributes=True)

@@ -23,20 +23,20 @@ class ProductRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def _from_db(self, model: Product, user_id: int | None) -> ProductPublic:
+    async def _from_db(
+        self,
+        model: Product,
+        user_id: int | None,
+        favorite_product_ids: set[int] | None = None,
+    ) -> ProductPublic:
+        product = ProductPublic.model_validate(model)
         if user_id:
-            current_usres_favorites = await self.session.scalars(
-                select(Favorite)
-                .options(joinedload(Favorite.product))
-                .where(Favorite.user_id == user_id)
-            )
-            if current_usres_favorites:
-                for favorite in current_usres_favorites:
-                    if favorite.product_id == model.id:
-                        favorite_product = ProductPublic.model_validate(model)
-                        favorite_product.is_favorite = True
-                        return favorite_product
-        return ProductPublic.model_validate(model)
+            # Если переданы предзагруженные ID избранных продуктов, используем их
+            if favorite_product_ids is not None:
+                if model.id in favorite_product_ids:
+                    product.is_favorite = True
+
+        return product
 
     async def _check_if_category_exists(self, category_id: int) -> bool:
         category = await self.session.scalar(
@@ -81,7 +81,17 @@ class ProductRepository:
             .offset(offset)
         )
 
-        return [await self._from_db(product, user_id) for product in products.all()]
+        favorite_product_ids = set()
+        if user_id:
+            favorite_ids = await self.session.scalars(
+                select(Favorite.product_id).where(Favorite.user_id == user_id)
+            )
+            favorite_product_ids = set(favorite_ids.all())
+
+        return [
+            await self._from_db(product, user_id, favorite_product_ids)
+            for product in products.all()
+        ]
 
     async def get_product(self, product_id: int, user_id: int | None):
         product = await self.session.scalar(
@@ -101,7 +111,14 @@ class ProductRepository:
         if product is None:
             raise ProductNotFoundException
 
-        return await self._from_db(product, user_id)
+        favorite_product_ids = set()
+        if user_id:
+            favorite_ids = await self.session.scalars(
+                select(Favorite.product_id).where(Favorite.user_id == user_id)
+            )
+            favorite_product_ids = set(favorite_ids.all())
+
+        return await self._from_db(product, user_id, favorite_product_ids)
 
     async def get_products_by_category(
         self,
@@ -125,7 +142,17 @@ class ProductRepository:
             )
         )
 
-        return [await self._from_db(product, user_id) for product in products.all()]
+        favorite_product_ids = set()
+        if user_id:
+            favorite_ids = await self.session.scalars(
+                select(Favorite.product_id).where(Favorite.user_id == user_id)
+            )
+            favorite_product_ids = set(favorite_ids.all())
+
+        return [
+            await self._from_db(product, user_id, favorite_product_ids)
+            for product in products.all()
+        ]
 
     async def create_product(
         self, create_product: ProductCreate, seller_id: int
@@ -235,7 +262,9 @@ class ProductRepository:
             raise ProductNotFoundException
 
         reviews = await self.session.scalars(
-            select(Review).where(
+            select(Review)
+            .options(joinedload(Review.user))
+            .where(
                 Review.product_id == product_id,
                 Review.is_active,
             )

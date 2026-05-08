@@ -1,6 +1,8 @@
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.domains.users.schemas import SellerForReviewSchema
+
 
 class ReviewPublic(BaseModel):
     id: int = Field(description="Уникальный идентификатор отзыва")
@@ -10,6 +12,8 @@ class ReviewPublic(BaseModel):
     created_at: datetime = Field(description="Время создания отзыва")
     grade: int = Field(description="Оценка от 1 до 5")
     is_active: bool = Field(description="Активен ли отзыв")
+
+    user: SellerForReviewSchema
 
     model_config = ConfigDict(from_attributes=True)
 

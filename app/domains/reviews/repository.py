@@ -41,7 +41,7 @@ class ReviewRepository:
         product = await self._check_if_product_exists(product_id)
 
         stmt = text("""SELECT AVG(grade) 
-                        FROM reviews JOIN products ON reviews.product_id = products.id
+                        FROM reviews
                         WHERE product_id = :product_id
                         AND reviews.is_active = True""").params(product_id=product_id)
 
