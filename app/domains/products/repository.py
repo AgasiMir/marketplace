@@ -26,7 +26,9 @@ class ProductRepository:
     async def _from_db(self, model: Product, user_id: int | None) -> ProductPublic:
         if user_id:
             current_usres_favorites = await self.session.scalars(
-                select(Favorite).where(Favorite.user_id == user_id)
+                select(Favorite)
+                .options(joinedload(Favorite.product))
+                .where(Favorite.user_id == user_id)
             )
             if current_usres_favorites:
                 for favorite in current_usres_favorites:
