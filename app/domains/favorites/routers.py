@@ -16,6 +16,7 @@ from app.exceptions.python_exceptions import (
 
 from pyrate_limiter import Duration, Limiter, Rate
 from fastapi_limiter.depends import RateLimiter
+from fastapi_cache.decorator import cache
 
 router = APIRouter(
     prefix="/favorites",
@@ -25,6 +26,7 @@ router = APIRouter(
 
 
 @router.get("", summary="Get Favorites", response_model=list[FavoritePublic])
+@cache(expire=30)
 async def get_favorites(db: DBDep, current_user: UserDep):
     return await db.favorites.get_favorites(current_user.id)
 

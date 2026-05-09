@@ -1,4 +1,6 @@
+import asyncio
 from fastapi import APIRouter, Body, Depends, status
+from app.cache_key_builders import product_key_builder
 from app.domains.products.schemas import (
     ProductAdminDeletePublic,
     ProductCreate,
@@ -49,7 +51,7 @@ router = APIRouter(
     description="Эндпойнт для получения всех товаров",
     response_model=list[ProductPublic],
 )
-@cache(expire=120)
+@cache(expire=30)
 async def get_products(
     products: ProductServiceDep,
     pagination: PaginationDep,
@@ -57,6 +59,7 @@ async def get_products(
     sort_order: SortOrder,
     current_user: OptionalUserDep,
 ):
+    await asyncio.sleep(2)
     user_id = current_user.id if current_user else None
     try:
         return await products.get_all_products(
@@ -75,12 +78,13 @@ async def get_products(
     description="Эндпойнт для получения товара по id",
     response_model=ProductPublic,
 )
-@cache(expire=120)
+@cache(expire=300, namespace="product", key_builder=product_key_builder)
 async def get_product(
     product_id: int,
     products: ProductServiceDep,
     current_user: OptionalUserDep,
 ):
+    await asyncio.sleep(2)
     user_id = current_user.id if current_user else None
     try:
         return await products.get_product(product_id, user_id)
@@ -94,12 +98,13 @@ async def get_product(
     description="Эндпойнт для получения товаров по категории",
     response_model=list[ProductPublic],
 )
-@cache(expire=120)
+@cache(expire=30)
 async def get_products_by_category(
     category_id: int,
     products: ProductServiceDep,
     current_user: OptionalUserDep,
 ):
+    await asyncio.sleep(2)
     user_id = current_user.id if current_user else None
     try:
         return await products.get_products_by_category(category_id, user_id)
@@ -198,6 +203,7 @@ async def delete_product(
 
 
 @router.get("/{product_id}/reviews", response_model=list[ReviewPublic])
+@cache(expire=30)
 async def get_product_reviews(product_id: int, products: ProductServiceDep):
     try:
         return await products.get_product_reviews(product_id=product_id)

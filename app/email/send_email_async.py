@@ -20,7 +20,7 @@ async def _send_email_async(recipient: str, subject: str, body: str) -> None:
         aiosmtplib.SMTPException: Если произошла ошибка при отправке.
     """
 
-    admin_email = "admin@finance-tracker.org"
+    admin_email = "admin@marketplace.org"
     message = EmailMessage()
     message["From"] = admin_email
     message["To"] = recipient

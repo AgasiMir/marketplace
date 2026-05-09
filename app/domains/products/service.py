@@ -12,6 +12,7 @@ from app.exceptions.python_exceptions import (
     NotEnoughRightsException,
     WrongSortByException,
 )
+from app.init import redis_manager
 from app.models import Product
 from app.uow.uow import DBManager
 from app.utils.utils import Pagination
@@ -101,6 +102,9 @@ class ProductService:
                 \nНазвание: {res.name}\nЦена: {res.price}
                 \nОписание товара: {res.description}""",
             )
+            key = f"fastapi-cache:product:{product_id}"
+            await redis_manager.delete(key)
+
             return res
 
     async def delete_product(
@@ -120,6 +124,9 @@ class ProductService:
             user_id,
         )
         if res:
+            key = f"fastapi-cache:product:{product_id}"
+            await redis_manager.delete(key)
+
             if user_role == "seller":
                 send_email_async.delay(
                     email,
@@ -131,7 +138,7 @@ class ProductService:
                 return res
 
             if user_role == "admin":
-                message = """Товар был удален, так как нарушал правила магазина. Просьба 
+                message = """Товар был удален, так как нарушал правила магазина. Просьба
                 связаться с администрацией для уточнения деталей."""
                 send_email_async.delay(
                     res.seller_email,

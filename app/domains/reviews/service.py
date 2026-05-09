@@ -1,6 +1,7 @@
 from app.domains.reviews.schemas import ReviewCreate, ReviewPublic
 from app.email import send_email_async
 from app.uow.uow import DBManager
+from app.init import redis_manager
 
 
 class ReviewService:
@@ -25,11 +26,18 @@ class ReviewService:
                 "Добавление отзыва",
                 body=f"{username}. Спасибо за отзыв:\n\nОтзыв: {res.comment}",
             )
+            key = f"fastapi-cache:product:{res.product_id}"
+            await redis_manager.delete(key)
+
             return res
 
     async def delete_review(self, review_id: int, user_id: int, user_role: str) -> dict:
-        return await self.db_manager.reviews.delete_review(
+        res = await self.db_manager.reviews.delete_review(
             review_id=review_id,
             user_id=user_id,
             user_role=user_role,
         )
+        key = f"fastapi-cache:product:{res['product_id']}"
+        await redis_manager.delete(key)
+
+        return res

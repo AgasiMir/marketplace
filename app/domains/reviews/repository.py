@@ -93,4 +93,4 @@ class ReviewRepository:
         review.is_active = False
 
         await self._set_product_rating(review.product_id)
-        return {"message": "Review Deleted"}
+        return {"message": "Review Deleted", "product_id": f"{review.product_id}"}

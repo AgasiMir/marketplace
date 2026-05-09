@@ -8,7 +8,7 @@ async def send_email(recipient: str, subject: str, body: str) -> None:
 
     Используется c background tasks.
 
-    Использует фиксированный адрес отправителя admin@finance-tracker.org
+    Использует фиксированный адрес отправителя admin@marketplace.org
     и SMTP сервер localhost:1025 (например, MailHog для тестирования).
 
     Args:
@@ -22,7 +22,7 @@ async def send_email(recipient: str, subject: str, body: str) -> None:
     Raises:
         aiosmtplib.SMTPException: Если произошла ошибка при отправке.
     """
-    admin_email = "admin@finance-tracker.org"
+    admin_email = "admin@marketplace.org"
     message = EmailMessage()
     message["From"] = admin_email
     message["To"] = recipient

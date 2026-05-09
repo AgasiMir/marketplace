@@ -37,7 +37,7 @@ router = APIRouter(
     description="Эндпойнт для получения категорий",
     response_model=list[CategoryPublic],
 )
-@cache(expire=120)
+@cache(expire=30)
 async def get_categories(
     cats: CategoryServiceDep,
     pagination: PaginationDep,
