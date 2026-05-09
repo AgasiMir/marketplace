@@ -34,6 +34,25 @@ class RedisManager:
     async def delete(self, key: str):
         await self.redis.delete(key)
 
+    @retry(exceptions=(ConnectionError, TimeoutError, ResponseError))
+    async def delete_by_pattern(self, pattern: str) -> int:
+        """
+        Удаляет все ключи, соответствующие паттерну.
+        Возвращает количество удаленных ключей.
+        """
+        if not self.redis:
+            raise ConnectionError("Redis не подключен")
+
+        keys = []
+        async for key in self.redis.scan_iter(match=pattern):
+            keys.append(key)
+
+        if not keys:
+            return 0
+
+        deleted = await self.redis.delete(*keys)
+        return deleted
+
     async def close(self):
         if self.redis:
             await self.redis.close()

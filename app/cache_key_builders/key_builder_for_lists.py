@@ -13,6 +13,8 @@ def key_builder_for_lists(
 
     cache_kw = {}
     data = kwargs.get("kwargs")
+    user = data.get("current_user")
+    user_id = user.id if user else None
 
     print(f"DATAAAAAAAAAAA {data}")
 
@@ -20,6 +22,7 @@ def key_builder_for_lists(
         if key not in ["products", "current_user"]:
             cache_kw[key] = value
 
+    cache_kw |= {"user_id": f"{user_id}"}
     print(f"CACHEEEEEEE_KWWWWWWWWW {cache_kw}")
 
     cache_key = hashlib.md5(  # noqa: S324

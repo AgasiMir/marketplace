@@ -13,6 +13,7 @@ from app.exceptions.python_exceptions import (
     WrongSortByException,
 )
 from app.init import redis_manager
+from app.middlewares.log import logger
 from app.models import Product
 from app.uow.uow import DBManager
 from app.utils.utils import Pagination
@@ -105,6 +106,12 @@ class ProductService:
         )
 
         if res:
+            pattern = f"fastapi-cache:product:{product_id}:user:*"
+            deleted_count = await redis_manager.delete_by_pattern(pattern)
+            logger.info(
+                f"Удалено ключей кэша для продукта {product_id}: {deleted_count}"
+            )
+
             send_email_async.delay(
                 email,
                 "Обновление Товара",
@@ -112,8 +119,6 @@ class ProductService:
                 \nНазвание: {res.name}\nЦена: {res.price}
                 \nОписание товара: {res.description}""",
             )
-            key = f"fastapi-cache:product:{product_id}"
-            await redis_manager.delete(key)
 
             return res
 
@@ -134,8 +139,11 @@ class ProductService:
             user_id,
         )
         if res:
-            key = f"fastapi-cache:product:{product_id}"
-            await redis_manager.delete(key)
+            pattern = f"fastapi-cache:product:{product_id}:user:*"
+            deleted_count = await redis_manager.delete_by_pattern(pattern)
+            logger.info(
+                f"Удалено ключей кэша для продукта {product_id}: {deleted_count}"
+            )
 
             if user_role == "seller":
                 send_email_async.delay(

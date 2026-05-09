@@ -2,6 +2,7 @@ from app.domains.reviews.schemas import ReviewCreate, ReviewPublic
 from app.email import send_email_async
 from app.uow.uow import DBManager
 from app.init import redis_manager
+from app.middlewares.log import logger
 
 
 class ReviewService:
@@ -21,13 +22,17 @@ class ReviewService:
         )
 
         if res:
+            pattern = f"fastapi-cache:product:{create_review.product_id}:user:*"
+            deleted_count = await redis_manager.delete_by_pattern(pattern)
+            logger.info(
+                f"Удалено ключей кэша для продукта {create_review.product_id}: {deleted_count}"
+            )
+
             send_email_async.delay(
                 email,
                 "Добавление отзыва",
                 body=f"{username}. Спасибо за отзыв:\n\nОтзыв: {res.comment}",
             )
-            key = f"fastapi-cache:product:{res.product_id}"
-            await redis_manager.delete(key)
 
             return res
 
@@ -37,7 +42,12 @@ class ReviewService:
             user_id=user_id,
             user_role=user_role,
         )
-        key = f"fastapi-cache:product:{res['product_id']}"
-        await redis_manager.delete(key)
 
-        return res
+        if res:
+            pattern = f"fastapi-cache:product:{res['product_id']}:user:*"
+            deleted_count = await redis_manager.delete_by_pattern(pattern)
+            logger.info(
+                f"Удалено ключей кэша для продукта {res['product_id']}: {deleted_count}"
+            )
+
+            return res
