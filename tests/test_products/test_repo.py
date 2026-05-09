@@ -22,7 +22,13 @@ async def test_get_all_products(category_user_product, db: DBManager):
 async def test_get_products_by_category(category_user_product, db: DBManager):
     category, user, product = category_user_product
 
-    res = await db.products.get_products_by_category(category.id, user.id)
+    res = await db.products.get_all_products(
+        0,
+        10,
+        "price",
+        user.id,
+        category.id,
+    )
 
     assert isinstance(res[0], ProductPublic)
 
@@ -33,13 +39,13 @@ async def test_get_products_by_non_existing_category(
     category, _, product = category_user_product
 
     with pytest.raises(CategoryNotFoundException):
-        await db.products.get_products_by_category(1234, None)
+        await db.products.get_all_products(0, 10, "price", None, 1234)
 
 
 async def test_get_product(category_user_product, db: DBManager):
-    _, _, product = category_user_product
+    _, user, product = category_user_product
 
-    res = await db.products.get_product(product.id, None)
+    res = await db.products.get_product(product.id, user.id)
     assert isinstance(res, ProductPublic)
 
 

@@ -14,9 +14,13 @@ def key_builder_for_lists(
     cache_kw = {}
     data = kwargs.get("kwargs")
 
+    print(f"DATAAAAAAAAAAA {data}")
+
     for key, value in data.items():
-        if key not in ["db"]:
+        if key not in ["products", "current_user"]:
             cache_kw[key] = value
+
+    print(f"CACHEEEEEEE_KWWWWWWWWW {cache_kw}")
 
     cache_key = hashlib.md5(  # noqa: S324
         f"{func.__module__}:{func.__name__}:{cache_kw}".encode()

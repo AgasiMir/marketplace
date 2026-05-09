@@ -22,14 +22,12 @@ class ProductService:
     def __init__(self, db_manager: DBManager):
         self.db_manager = db_manager
 
-    async def get_all_products(
+    async def _pagination_and_sort(
         self,
         pagination: Pagination,
         sort_by: str,
         sort_order: str,
-        user_id: int | None,
-    ) -> list[ProductPublic]:
-
+    ):
         LIST_OF_SORT_BY = ["id", "name", "price"]
 
         sort_by = sort_by
@@ -46,19 +44,31 @@ class ProductService:
         offset = (page - 1) * pagination.page_size.value
         limit = pagination.page_size.value
 
+        return {"offset": offset, "limit": limit, "sort_by": sort_by}
+
+    async def get_all_products(
+        self,
+        pagination: Pagination,
+        sort_by: str,
+        sort_order: str,
+        category_id: int | None = None,
+        user_id: int | None = None,
+    ) -> list[ProductPublic]:
+
+        data = await self._pagination_and_sort(
+            pagination=pagination, sort_by=sort_by, sort_order=sort_order
+        )
+
         return await self.db_manager.products.get_all_products(
-            offset=offset, limit=limit, sort_by=sort_by, user_id=user_id
+            offset=data["offset"],
+            limit=data["limit"],
+            sort_by=data["sort_by"],
+            category_id=category_id,
+            user_id=user_id,
         )
 
     async def get_product(self, product_id: int, user_id: int | None) -> ProductPublic:
         return await self.db_manager.products.get_product(product_id, user_id)
-
-    async def get_products_by_category(
-        self, category_id: int, user_id: int | None
-    ) -> list[ProductPublic]:
-        return await self.db_manager.products.get_products_by_category(
-            category_id, user_id
-        )
 
     async def create_product(
         self,

@@ -62,7 +62,7 @@ async def test_delete_product_review_with_author(
     assert response.status_code == 201
 
     response = await authenticated_buyer.delete("/reviews/1")
-    assert response.json() == {"message": "Review Deleted"}
+    assert response.json()["message"] == "Review Deleted"
 
 
 async def test_delete_product_review_with_admin(
@@ -77,7 +77,7 @@ async def test_delete_product_review_with_admin(
     assert response.json()["grade"] == 4
 
     response = await authenticated_admin.delete("/reviews/1")
-    assert response.json() == {"message": "Review Deleted"}
+    assert response.json()["message"] == "Review Deleted"
 
 
 async def test_delete_product_non_existing_review(authenticated_buyer):

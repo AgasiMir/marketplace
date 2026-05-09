@@ -1,6 +1,6 @@
 import asyncio
 from fastapi import APIRouter, Body, Depends, status
-from app.cache_key_builders import product_key_builder
+from app.cache_key_builders import key_builder_for_lists, product_key_builder
 from app.domains.products.schemas import (
     ProductAdminDeletePublic,
     ProductCreate,
@@ -51,7 +51,7 @@ router = APIRouter(
     description="Эндпойнт для получения всех товаров",
     response_model=list[ProductPublic],
 )
-@cache(expire=30)
+# @cache(expire=300, namespace="product_list", key_builder=key_builder_for_lists)
 async def get_products(
     products: ProductServiceDep,
     pagination: PaginationDep,
@@ -59,7 +59,7 @@ async def get_products(
     sort_order: SortOrder,
     current_user: OptionalUserDep,
 ):
-    await asyncio.sleep(2)
+    # await asyncio.sleep(2)
     user_id = current_user.id if current_user else None
     try:
         return await products.get_all_products(
@@ -98,16 +98,27 @@ async def get_product(
     description="Эндпойнт для получения товаров по категории",
     response_model=list[ProductPublic],
 )
-@cache(expire=30)
+# @cache(
+#     expire=300, namespace="product_list_by_category", key_builder=key_builder_for_lists
+# )
 async def get_products_by_category(
     category_id: int,
+    pagination: PaginationDep,
+    sort_by: ProductSortBy,
+    sort_order: SortOrder,
     products: ProductServiceDep,
     current_user: OptionalUserDep,
 ):
-    await asyncio.sleep(2)
+    # await asyncio.sleep(2)
     user_id = current_user.id if current_user else None
     try:
-        return await products.get_products_by_category(category_id, user_id)
+        return await products.get_all_products(
+            category_id=category_id,
+            user_id=user_id,
+            pagination=pagination,
+            sort_by=sort_by.name,
+            sort_order=sort_order.value,
+        )
     except CategoryNotFoundException:
         raise CategoryNotFoundHTTPException
 
@@ -203,7 +214,7 @@ async def delete_product(
 
 
 @router.get("/{product_id}/reviews", response_model=list[ReviewPublic])
-@cache(expire=30)
+@cache(expire=30, namespace="product_review_list", key_builder=key_builder_for_lists)
 async def get_product_reviews(product_id: int, products: ProductServiceDep):
     try:
         return await products.get_product_reviews(product_id=product_id)

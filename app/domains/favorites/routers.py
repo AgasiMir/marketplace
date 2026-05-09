@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import APIRouter, Depends, status
 from app.domains.dependencies import DBDep, UserDep
 from app.domains.favorites.schemas import FavoriteCreate, FavoritePublic
@@ -26,8 +27,8 @@ router = APIRouter(
 
 
 @router.get("", summary="Get Favorites", response_model=list[FavoritePublic])
-@cache(expire=30)
 async def get_favorites(db: DBDep, current_user: UserDep):
+    await asyncio.sleep(2)
     return await db.favorites.get_favorites(current_user.id)
 
 

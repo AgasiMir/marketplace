@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, status
 
+from app.cache_key_builders import key_builder_for_lists
 from app.domains.categories.schemas import (
     CategoryCreate,
     CategoryPartialUpdate,
@@ -37,7 +38,7 @@ router = APIRouter(
     description="Эндпойнт для получения категорий",
     response_model=list[CategoryPublic],
 )
-@cache(expire=30)
+@cache(expire=300, namespace="category_list", key_builder=key_builder_for_lists)
 async def get_categories(
     cats: CategoryServiceDep,
     pagination: PaginationDep,

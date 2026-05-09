@@ -63,8 +63,17 @@ class ProductRepository:
         offset: int,
         limit: int,
         sort_by: str,
-        user_id: int | None,
-    ):
+        user_id: int | None = None,
+        category_id: int | None = None,
+    ) -> list[ProductPublic]:
+
+        filters = [Product.is_active, User.is_active, Category.is_active]
+
+        if category_id:
+            if not await self._check_if_category_exists(category_id):
+                raise CategoryNotFoundException
+            filters.append(Product.category_id == category_id)
+
         products = await self.session.scalars(
             select(Product)
             .join(Category, Product.category_id == Category.id)
@@ -72,9 +81,7 @@ class ProductRepository:
             .options(joinedload(Product.category))
             .options(joinedload(Product.seller))
             .where(
-                Product.is_active,
-                User.is_active,
-                Category.is_active,
+                *filters,
             )
             .order_by(sort_by)
             .limit(limit)
@@ -119,40 +126,6 @@ class ProductRepository:
             favorite_product_ids = set(favorite_ids.all())
 
         return await self._from_db(product, user_id, favorite_product_ids)
-
-    async def get_products_by_category(
-        self,
-        category_id: int,
-        user_id: int | None,
-    ) -> list[ProductPublic]:
-        if not await self._check_if_category_exists(category_id):
-            raise CategoryNotFoundException
-
-        products = await self.session.scalars(
-            select(Product)
-            .join(Category, Product.category_id == Category.id)
-            .join(User, Product.seller_id == User.id)
-            .options(joinedload(Product.category))
-            .options(joinedload(Product.seller))
-            .where(
-                Product.category_id == category_id,
-                Product.is_active,
-                User.is_active,
-                Category.is_active,
-            )
-        )
-
-        favorite_product_ids = set()
-        if user_id:
-            favorite_ids = await self.session.scalars(
-                select(Favorite.product_id).where(Favorite.user_id == user_id)
-            )
-            favorite_product_ids = set(favorite_ids.all())
-
-        return [
-            await self._from_db(product, user_id, favorite_product_ids)
-            for product in products.all()
-        ]
 
     async def create_product(
         self, create_product: ProductCreate, seller_id: int

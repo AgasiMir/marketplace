@@ -107,7 +107,15 @@ async def test_get_product_by_id_with_inactive_user(
 
 async def test_get_products_by_category(category_user_product, async_client):
     category, *_ = category_user_product
-    res = await async_client.get(f"/products/category/{category.id}")
+    res = await async_client.get(
+        f"/products/category/{category.id}",
+        params={
+            "sort_by": "price",
+            "sort_order": "desc",
+            "page": 1,
+            "page_size": 10,
+        },
+    )
 
     assert res.status_code == 200
 
@@ -120,7 +128,15 @@ async def test_get_products_by_category_with_inactive_product(
     product.is_active = 0
     await db.commit()
 
-    res = await async_client.get(f"/products/category/{category.id}")
+    res = await async_client.get(
+        f"/products/category/{category.id}",
+        params={
+            "sort_by": "price",
+            "sort_order": "desc",
+            "page": 1,
+            "page_size": 10,
+        },
+    )
 
     assert res.status_code == 200
     assert len(res.json()) == 0
@@ -129,11 +145,19 @@ async def test_get_products_by_category_with_inactive_product(
 async def test_get_products_by_non_existing_category(async_client):
 
     with patch(
-        "app.domains.products.service.ProductService.get_products_by_category"
+        "app.domains.products.service.ProductService.get_all_products"
     ) as mock_obj:
         mock_obj.side_effect = CategoryNotFoundException
 
-        res = await async_client.get(f"/products/category/{123}")
+        res = await async_client.get(
+            f"/products/category/{123}",
+            params={
+                "sort_by": "price",
+                "sort_order": "desc",
+                "page": 1,
+                "page_size": 10,
+            },
+        )
 
         assert res.status_code == 404
         mock_obj.assert_called_once()
