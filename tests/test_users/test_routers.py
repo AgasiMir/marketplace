@@ -77,7 +77,6 @@ async def test_login(authenticated_buyer):
     )
 
     assert res.status_code == 200
-    print(res.json()["refresh_token"])
 
 
 async def test_login_with_wrong_credentials(async_client):

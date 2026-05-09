@@ -9,37 +9,52 @@ from app.domains.products.schemas import (
 from app.exceptions.python_exceptions import (
     CategoryNotFoundException,
     CurrentProductSellerException,
+    MinPriceMustBeLessThanMaxPriceException,
     ProductNotFoundException,
 )
 from app.uow.uow import DBManager
+from app.utils.utils import Filters
 
 
 async def test_get_all_products(category_user_product, db: DBManager):
-    res = await db.products.get_all_products(0, 10, "price", None)
+    data = {"min_price": 10, "max_price": 200, "in_stock": True, "seller_id": 1}
+    filters = Filters(**data)
+
+    res = await db.products.get_all_products(0, 10, "price", filters=filters)
     assert isinstance(res[0], ProductPublic)
+
+
+async def test_get_all_products_with_min_more_max(category_user_product, db: DBManager):
+    data = {"min_price": 300, "max_price": 200, "in_stock": True, "seller_id": 1}
+    filters = Filters(**data)
+
+    with pytest.raises(MinPriceMustBeLessThanMaxPriceException):
+        await db.products.get_all_products(0, 10, "price", filters=filters)
 
 
 async def test_get_products_by_category(category_user_product, db: DBManager):
     category, user, product = category_user_product
+    data = {"min_price": 100, "max_price": 200, "in_stock": True, "seller_id": 1}
+    filters = Filters(**data)
 
     res = await db.products.get_all_products(
-        0,
-        10,
-        "price",
-        user.id,
-        category.id,
+        0, 10, "price", filters=filters, user_id=user.id, category_id=category.id
     )
 
-    assert isinstance(res[0], ProductPublic)
+    assert len(res) == 0
 
 
 async def test_get_products_by_non_existing_category(
     category_user_product, db: DBManager
 ):
     category, _, product = category_user_product
-
+    filters = Filters(
+        **{"min_price": 100, "max_price": 200, "in_stock": True, "seller_id": 1}
+    )
     with pytest.raises(CategoryNotFoundException):
-        await db.products.get_all_products(0, 10, "price", None, 1234)
+        await db.products.get_all_products(
+            0, 10, "price", filters=filters, category_id=1234
+        )
 
 
 async def test_get_product(category_user_product, db: DBManager):

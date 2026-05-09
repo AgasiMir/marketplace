@@ -16,7 +16,7 @@ from app.init import redis_manager
 from app.middlewares.log import logger
 from app.models import Product
 from app.uow.uow import DBManager
-from app.utils.utils import Pagination
+from app.utils.utils import Pagination, Filters
 
 
 class ProductService:
@@ -50,6 +50,7 @@ class ProductService:
     async def get_all_products(
         self,
         pagination: Pagination,
+        filters: Filters,
         sort_by: str,
         sort_order: str,
         category_id: int | None = None,
@@ -66,6 +67,7 @@ class ProductService:
             sort_by=data["sort_by"],
             category_id=category_id,
             user_id=user_id,
+            filters=filters,
         )
 
     async def get_product(self, product_id: int, user_id: int | None) -> ProductPublic:

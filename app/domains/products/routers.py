@@ -10,6 +10,7 @@ from app.domains.products.schemas import (
 from app.domains.dependencies import (
     OptionalUserDep,
     PaginationDep,
+    FiltersDep,
     ProductServiceDep,
     SellerDep,
     UserDep,
@@ -22,6 +23,7 @@ from app.domains.reviews.schemas import ReviewPublic
 from app.exceptions.fastapi_exceptions import (
     CategoryNotFoundHTTPException,
     CurrentProductSellerHTTPException,
+    MinPriceMustBeLessThanMaxPriceHTTPException,
     NotEnoughRightsHTTPException,
     ProductNotFoundHTTPException,
     WrongSortByHTTPException,
@@ -29,6 +31,7 @@ from app.exceptions.fastapi_exceptions import (
 from app.exceptions.python_exceptions import (
     CategoryNotFoundException,
     CurrentProductSellerException,
+    MinPriceMustBeLessThanMaxPriceException,
     NotEnoughRightsException,
     ProductNotFoundException,
     WrongSortByException,
@@ -54,6 +57,7 @@ router = APIRouter(
 async def get_products(
     products: ProductServiceDep,
     pagination: PaginationDep,
+    filters: FiltersDep,
     sort_by: ProductSortBy,
     sort_order: SortOrder,
     current_user: OptionalUserDep,
@@ -62,12 +66,15 @@ async def get_products(
     try:
         return await products.get_all_products(
             pagination=pagination,
+            filters=filters,
             sort_by=sort_by.name,
             sort_order=sort_order.value,
             user_id=user_id,
         )
     except WrongSortByException:
         raise WrongSortByHTTPException
+    except MinPriceMustBeLessThanMaxPriceException:
+        raise MinPriceMustBeLessThanMaxPriceHTTPException
 
 
 @router.get(
@@ -99,6 +106,7 @@ async def get_product(
 async def get_products_by_category(
     category_id: int,
     pagination: PaginationDep,
+    filters: FiltersDep,
     sort_by: ProductSortBy,
     sort_order: SortOrder,
     products: ProductServiceDep,
@@ -110,11 +118,14 @@ async def get_products_by_category(
             category_id=category_id,
             user_id=user_id,
             pagination=pagination,
+            filters=filters,
             sort_by=sort_by.name,
             sort_order=sort_order.value,
         )
     except CategoryNotFoundException:
         raise CategoryNotFoundHTTPException
+    except MinPriceMustBeLessThanMaxPriceException:
+        raise MinPriceMustBeLessThanMaxPriceHTTPException
 
 
 @router.post(

@@ -5,6 +5,7 @@ from app.domains.reviews.schemas import ReviewPublic
 from app.exceptions.python_exceptions import (
     CategoryNotFoundException,
     CurrentProductSellerException,
+    MinPriceMustBeLessThanMaxPriceException,
     ProductNotFoundException,
 )
 
@@ -15,8 +16,8 @@ from app.domains.products.schemas import (
     ProductPublic,
     ProductURDPublic,
 )
-from app.models import Category, Product, Favorite, Review
-from app.models.user import User
+from app.models import Category, Product, Favorite, Review, User
+from app.utils.utils import Filters
 
 
 class ProductRepository:
@@ -63,16 +64,34 @@ class ProductRepository:
         offset: int,
         limit: int,
         sort_by: str,
+        filters: Filters,
         user_id: int | None = None,
         category_id: int | None = None,
     ) -> list[ProductPublic]:
 
-        filters = [Product.is_active, User.is_active, Category.is_active]
+        if (
+            filters.min_price
+            and filters.max_price
+            and filters.min_price > filters.max_price
+        ):
+            raise MinPriceMustBeLessThanMaxPriceException
+
+        filters_list = [Product.is_active, User.is_active, Category.is_active]
 
         if category_id:
             if not await self._check_if_category_exists(category_id):
                 raise CategoryNotFoundException
-            filters.append(Product.category_id == category_id)
+
+            filters_list.append(Product.category_id == category_id)
+
+        if filters.min_price:
+            filters_list.append(Product.price >= filters.min_price)
+        if filters.max_price:
+            filters_list.append(Product.price <= filters.max_price)
+        if filters.in_stock:
+            filters_list.append(Product.stock > 0)
+        if filters.seller_id:
+            filters_list.append(Product.seller_id == filters.seller_id)
 
         products = await self.session.scalars(
             select(Product)
@@ -81,7 +100,7 @@ class ProductRepository:
             .options(joinedload(Product.category))
             .options(joinedload(Product.seller))
             .where(
-                *filters,
+                *filters_list,
             )
             .order_by(sort_by)
             .limit(limit)

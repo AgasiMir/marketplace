@@ -16,7 +16,7 @@ from app.exceptions.fastapi_exceptions import (
 from app.models.user import User, UserRole
 from app.uow.uow import DBManager
 
-from app.utils.utils import Pagination
+from app.utils.utils import Pagination, Filters
 
 from app.domains.categories.service import CategoryService
 from app.domains.users.service import UserService
@@ -28,6 +28,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login", auto_error=False)
 
 # Зависимость для пагинации
 PaginationDep = Annotated[Pagination, Depends()]
+
+# Зависимость для фильтров
+FiltersDep = Annotated[Filters, Depends()]
 
 
 # Зависимость для получения базы данных

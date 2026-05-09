@@ -95,3 +95,8 @@ class ReviewNotFoundHTTPException(MarketplaceHTTPException):
 class OnlyAuthorOrAdminCanDeleteReviewHTTPException(MarketplaceHTTPException):
     status_code = status.HTTP_403_FORBIDDEN
     detail = "Only the author of this review or admin can perform this action."
+
+
+class MinPriceMustBeLessThanMaxPriceHTTPException(MarketplaceHTTPException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    detail = "MinPrice Must Be Less Than MaxPrice."

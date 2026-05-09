@@ -59,3 +59,7 @@ class ReviewNotFoundException(MarketplaceException):
 
 class OnlyAuthorOrAdminCanDeleteReviewException(MarketplaceException):
     detail = "Only the author of this review or admin can perform this action."
+
+
+class MinPriceMustBeLessThanMaxPriceException(MarketplaceException):
+    detail = "MinPrice Must Be Less Than MaxPrice."

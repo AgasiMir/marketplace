@@ -30,3 +30,10 @@ class ProductSortBy(StrEnum):
 class Pagination(BaseModel):
     page: int = Field(default=1, ge=1, description="Номер страницы")
     page_size: PageSize = Field(description="Размер страницы")
+
+
+class Filters(BaseModel):
+    min_price: float | None = Field(default=None, ge=0, description="Минимальная цена")
+    max_price: float | None = Field(default=None, ge=0, description="Максимальная цена")
+    in_stock: bool | None = Field(default=None, description="Товар в наличии")
+    seller_id: int | None = Field(default=None, description="Товары продавца")
