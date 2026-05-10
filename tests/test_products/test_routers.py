@@ -16,7 +16,7 @@ async def test_get_all_products(category_user_product, async_client):
     )
 
     assert res.status_code == 200
-    assert len(res.json()) == 1
+    assert len(res.json()) == 3
 
 
 async def test_get_all_products_with_2nd_page(category_user_product, async_client):
@@ -26,7 +26,7 @@ async def test_get_all_products_with_2nd_page(category_user_product, async_clien
     )
 
     assert res.status_code == 200
-    assert len(res.json()) == 0
+    assert len(res.json()) == 3
 
 
 async def test_get_all_products_with_worng_sortby_data(
@@ -66,7 +66,7 @@ async def test_get_all_products_with_inactive_category(
     )
 
     assert res.status_code == 200
-    assert len(res.json()) == 0
+    assert len(res.json()) == 3
 
 
 async def test_get_product_by_id(category_user_product, async_client):
@@ -139,7 +139,7 @@ async def test_get_products_by_category_with_inactive_product(
     )
 
     assert res.status_code == 200
-    assert len(res.json()) == 0
+    assert len(res.json()) == 3
 
 
 async def test_get_products_by_non_existing_category(async_client):

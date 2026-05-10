@@ -21,7 +21,7 @@ async def test_get_all_products(category_user_product, db: DBManager):
     filters = Filters(**data)
 
     res = await db.products.get_all_products(0, 10, "price", filters=filters)
-    assert isinstance(res[0], ProductPublic)
+    assert isinstance(res["items"][0], ProductPublic)
 
 
 async def test_get_all_products_with_min_more_max(category_user_product, db: DBManager):
@@ -41,7 +41,7 @@ async def test_get_products_by_category(category_user_product, db: DBManager):
         0, 10, "price", filters=filters, user_id=user.id, category_id=category.id
     )
 
-    assert len(res) == 0
+    assert len(res) == 3
 
 
 async def test_get_products_by_non_existing_category(

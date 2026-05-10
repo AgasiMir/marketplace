@@ -5,6 +5,7 @@ from app.domains.products.schemas import (
     ProductCreate,
     ProductPartialUpdate,
     ProductPublic,
+    ProductPublicWithPagination,
     ProductURDPublic,
 )
 from app.domains.dependencies import (
@@ -51,7 +52,7 @@ router = APIRouter(
     "",
     summary="Get all products",
     description="Эндпойнт для получения всех товаров",
-    response_model=list[ProductPublic],
+    response_model=ProductPublicWithPagination,
 )
 @cache(expire=30, namespace="list_of_products", key_builder=key_builder_for_lists)
 async def get_products(
@@ -100,7 +101,7 @@ async def get_product(
     "/category/{category_id}",
     summary="Get products by category",
     description="Эндпойнт для получения товаров по категории",
-    response_model=list[ProductPublic],
+    response_model=ProductPublicWithPagination,
 )
 @cache(expire=30, namespace="list_of_products", key_builder=key_builder_for_lists)
 async def get_products_by_category(

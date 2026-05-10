@@ -4,6 +4,7 @@ from app.domains.products.schemas import (
     ProductCreate,
     ProductPartialUpdate,
     ProductPublic,
+    ProductPublicWithPagination,
     ProductURDPublic,
 )
 from app.domains.reviews.schemas import ReviewPublic
@@ -55,7 +56,7 @@ class ProductService:
         sort_order: str,
         category_id: int | None = None,
         user_id: int | None = None,
-    ) -> list[ProductPublic]:
+    ) -> ProductPublicWithPagination:
 
         data = await self._pagination_and_sort(
             pagination=pagination, sort_by=sort_by, sort_order=sort_order

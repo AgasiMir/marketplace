@@ -4,6 +4,7 @@ from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 from app.domains.categories.schemas import CategoryForProductSchema
 from app.domains.users.schemas import SellerForProductSchema
+from app.utils.utils import Pagination
 
 
 class ProductPublic(BaseModel):
@@ -30,6 +31,12 @@ class ProductPublic(BaseModel):
     rating: float = Field(description="Рейтинг товара")
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ProductPublicWithPagination(BaseModel):
+    items: list[ProductPublic]
+    total: int = Field(description="Общее количество товаров")
+    pagination: Pagination
 
 
 class ProductCreate(BaseModel):

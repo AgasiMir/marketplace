@@ -14,6 +14,7 @@ from app.domains.products.schemas import (
     ProductCreate,
     ProductPartialUpdate,
     ProductPublic,
+    ProductPublicWithPagination,
     ProductURDPublic,
 )
 from app.models import Category, Product, Favorite, Review, User
@@ -67,7 +68,7 @@ class ProductRepository:
         filters: Filters,
         user_id: int | None = None,
         category_id: int | None = None,
-    ) -> list[ProductPublic]:
+    ) -> ProductPublicWithPagination:
 
         if (
             filters.min_price
@@ -93,6 +94,15 @@ class ProductRepository:
         if filters.seller_id:
             filters_list.append(Product.seller_id == filters.seller_id)
 
+        total_count = (
+            select(Product)
+            .join(Product.category)
+            .join(Product.seller)
+            .where(*filters_list)
+        )
+        total = await self.session.scalars(total_count)
+        total = len(set(total))
+
         products = await self.session.scalars(
             select(Product)
             .join(Category, Product.category_id == Category.id)
@@ -114,12 +124,18 @@ class ProductRepository:
             )
             favorite_product_ids = set(favorite_ids.all())
 
-        return [
+        items = [
             await self._from_db(product, user_id, favorite_product_ids)
             for product in products.all()
         ]
 
-    async def get_product(self, product_id: int, user_id: int | None):
+        return {
+            "items": items,
+            "total": total,
+            "pagination": {"page": offset + 1, "page_size": limit},
+        }
+
+    async def get_product(self, product_id: int, user_id: int | None) -> ProductPublic:
         product = await self.session.scalar(
             select(Product)
             .join(Category, Product.category_id == Category.id)
