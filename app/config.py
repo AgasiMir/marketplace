@@ -31,6 +31,8 @@ class Settings(BaseSettings):
 
     MailDEV_HOST: str
 
+    authentication_backend_secret_key: str
+
     @property
     def RABBITMQ_URL(self):
         url = f"amqp://{self.RABBITMQ_DEFAULT_USER}:{self.RABBITMQ_DEFAULT_PASS}@{self.RABBITMQ_DEFAULT_HOST}:{self.RABBITMQ_DEFAULT_PORT}/"

@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 import jwt
 
 from app.config import settings
+from app.middlewares.log import logger
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -58,3 +59,61 @@ def create_refresh_token(data: dict):
         "token_type": "refresh",
     }
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+
+def decode_token(token: str) -> bool:
+    """
+    Валидирует JWT access-токен.
+
+    Декодирует токен с использованием секретного ключа и алгоритма из настроек,
+    проверяет наличие обязательных полей (sub, token_type) и убеждается,
+    что token_type равен "access". Также проверяет срок действия токена.
+
+    Используется в связке с AdminAuth для аутентификации административной панели,
+    а также может применяться для быстрой проверки валидности токена без
+    обращения к базе данных.
+
+    Args:
+        token (str): JWT access-токен в виде строки.
+
+    Returns:
+        bool: True если токен валиден (не истёк, корректный тип, содержит sub),
+              False в противном случае.
+
+    Raises:
+        Не поднимает исключений, все ошибки логируются и возвращаются как False.
+
+    Пример использования в AdminAuth:
+        class AdminAuth(AuthenticationBackend):
+            async def login(self, request: Request) -> bool:
+                ...
+                access_token = create_access_token(...)
+                if not decode_token(access_token):
+                    return False
+                ...
+
+            async def authenticate(self, request: Request) -> bool:
+                token = request.session.get("access_token")
+                if not token or not decode_token(token):
+                    return False
+                return True
+    """
+    try:
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
+        email: str = payload.get("sub")
+        token_type: str | None = payload.get("token_type")
+        if email is None or token_type != "access":
+            logger.error("Could not validate token")
+            return False
+
+    except jwt.ExpiredSignatureError:
+        logger.warning("Token has expired")
+        return False
+
+    except jwt.PyJWTError:
+        logger.error("Could not validate token")
+        return False
+
+    return True
