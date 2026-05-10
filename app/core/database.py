@@ -5,6 +5,7 @@ from sqlalchemy import MetaData, NullPool
 
 from app.config import settings
 
+
 async_engine = create_async_engine(
     url=settings.DB_URL,
     pool_pre_ping=True,
@@ -45,4 +46,10 @@ metadata = MetaData(naming_convention=naming_convention)
 
 
 class Base(DeclarativeBase):
+    """Базовый класс для всех декларативных моделей.
+
+    Наследует от DeclarativeBase и использует общие метаданные
+    с соглашением об именовании.
+    """
+
     metadata = metadata

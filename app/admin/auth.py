@@ -12,7 +12,34 @@ from app.auth import decode_token
 
 
 class AdminAuth(AuthenticationBackend):
+    """
+    Бэкенд аутентификации для административной панели SQLAdmin.
+
+    Обеспечивает вход, выход и проверку аутентификации администраторов
+    через сессионные JWT-токены. Требует, чтобы пользователь имел роль
+    администратора (UserRole.admin) и был активен.
+
+    Attributes:
+        secret_key (str): Секретный ключ для подписи токенов, передаётся
+            в конструктор из настроек.
+    """
+
     async def login(self, request: Request) -> bool:
+        """
+        Обрабатывает вход администратора.
+
+        Извлекает username и password из формы запроса, проверяет
+        существование пользователя, корректность пароля, активность
+        и роль администратора. При успехе генерирует JWT-токен,
+        сохраняет его в сессии и возвращает True.
+
+        Args:
+            request (Request): Объект запроса Starlette, содержащий форму.
+
+        Returns:
+            bool: True если аутентификация успешна, иначе False.
+        """
+
         form = await request.form()
         username, password = form["username"], form["password"]
 
@@ -41,10 +68,35 @@ class AdminAuth(AuthenticationBackend):
         return True
 
     async def logout(self, request: Request) -> bool:
+        """
+        Обрабатывает выход администратора.
+
+        Очищает все данные сессии, удаляя JWT-токен аутентификации.
+
+        Args:
+            request (Request): Объект запроса Starlette.
+
+        Returns:
+            bool: Всегда возвращает True.
+        """
+
         request.session.clear()
         return True
 
     async def authenticate(self, request: Request) -> bool:
+        """
+        Проверяет аутентификацию администратора на основе сессии.
+
+        Извлекает JWT-токен из сессии и проверяет его валидность
+        с помощью decode_token.
+
+        Args:
+            request (Request): Объект запроса Starlette.
+
+        Returns:
+            bool: True если токен присутствует и валиден, иначе False.
+        """
+
         token = request.session.get("access_token")
 
         if not token:

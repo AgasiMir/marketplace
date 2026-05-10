@@ -6,6 +6,17 @@ from app.auth import hash_password
 
 
 class UserAdmin(ModelView, model=User):
+    """
+    Административный интерфейс для управления пользователями.
+
+    Наследуется от sqladmin.ModelView, предоставляет CRUD-операции
+    для модели User с кастомизацией отображения и поведения.
+
+
+    Методы:
+        on_model_change: Хэширует пароль при создании нового пользователя.
+    """
+
     # Permissions
     can_create = True
     can_delete = False
@@ -52,6 +63,13 @@ class UserAdmin(ModelView, model=User):
 
 
 class CategoryAdmin(ModelView, model=Category):
+    """
+    Административный интерфейс для управления категориями товаров.
+
+    Наследуется от sqladmin.ModelView, предоставляет CRUD-операции
+    для модели Category с поддержкой иерархии (родительские/дочерние категории).
+    """
+
     # Permissions
     can_create = True
     can_delete = False
@@ -84,6 +102,14 @@ class CategoryAdmin(ModelView, model=Category):
 
 
 class ProductAdmin(ModelView, model=Product):
+    """
+    Административный интерфейс для управления продуктами (товарами).
+
+    Наследуется от sqladmin.ModelView, предоставляет ограниченные CRUD-операции
+    для модели Product (создание и удаление запрещены, только просмотр и редактирование).
+
+    """
+
     # Permissions
     can_create = False
     can_delete = False
@@ -116,6 +142,14 @@ class ProductAdmin(ModelView, model=Product):
 
 
 class ReviewAdmin(ModelView, model=Review):
+    """
+    Административный интерфейс для управления отзывами на продукты.
+
+    Наследуется от sqladmin.ModelView, предоставляет ограниченные CRUD-операции
+    для модели Review (создание и удаление запрещены, только просмотр и редактирование).
+
+    """
+
     # Permissions
     can_create = False
     can_delete = False
