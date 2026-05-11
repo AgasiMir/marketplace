@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.domains.reviews.schemas import ReviewPublic
@@ -68,6 +68,7 @@ class ProductRepository:
         filters: Filters,
         user_id: int | None = None,
         category_id: int | None = None,
+        search: str | None = None,
     ) -> ProductPublicWithPagination:
 
         if (
@@ -94,28 +95,77 @@ class ProductRepository:
         if filters.seller_id:
             filters_list.append(Product.seller_id == filters.seller_id)
 
-        total_count = (
+        # Базовый запрос total
+        total_stmt = (
             select(Product)
             .join(Product.category)
             .join(Product.seller)
             .where(*filters_list)
         )
-        total = await self.session.scalars(total_count)
+
+        rank_col = None
+
+        if search:
+            search_value = search.strip()
+            if search_value:
+                # строим два tsquery для одной и той же фразы, но с разными языками
+                ts_query_en = func.websearch_to_tsquery("english", search_value)
+                ts_query_ru = func.websearch_to_tsquery("russian", search_value)
+
+                # Ищем совпадение в любой конфигурации и добавляем в общий фильтр
+                ts_mathch_any = or_(
+                    Product.tsv.op("@@")(ts_query_en),
+                    Product.tsv.op("@@")(ts_query_ru),
+                )
+                filters_list.append(ts_mathch_any)
+
+                # берем ранг максимальный из двух
+                rank_col = func.greatest(
+                    func.ts_rank_cd(Product.tsv, ts_query_en),
+                    func.ts_rank_cd(Product.tsv, ts_query_ru),
+                ).label("rank")
+
+                # total с учетом полнотекстового фильтра
+                total_stmt = (
+                    select(Product)
+                    .join(Product.category)
+                    .join(Product.seller)
+                    .where(*filters_list)
+                )
+
+        total = await self.session.scalars(total_stmt)
         total = len(set(total))
 
-        products = await self.session.scalars(
-            select(Product)
-            .join(Category, Product.category_id == Category.id)
-            .join(User, Product.seller_id == User.id)
-            .options(joinedload(Product.category))
-            .options(joinedload(Product.seller))
-            .where(
-                *filters_list,
+        # Основной запрос (если есть поиск — добавим ранг в выборку и сортировку)
+        if rank_col is not None:
+            products = await self.session.scalars(
+                select(Product, rank_col)
+                .join(Category, Product.category_id == Category.id)
+                .join(User, Product.seller_id == User.id)
+                .options(joinedload(Product.category))
+                .options(joinedload(Product.seller))
+                .where(
+                    *filters_list,
+                )
+                .order_by(sort_by)
+                .limit(limit)
+                .offset(offset)
             )
-            .order_by(sort_by)
-            .limit(limit)
-            .offset(offset)
-        )
+
+        else:
+            products = await self.session.scalars(
+                select(Product, rank_col)
+                .join(Category, Product.category_id == Category.id)
+                .join(User, Product.seller_id == User.id)
+                .options(joinedload(Product.category))
+                .options(joinedload(Product.seller))
+                .where(
+                    *filters_list,
+                )
+                .order_by(sort_by)
+                .limit(limit)
+                .offset(offset)
+            )
 
         favorite_product_ids = set()
         if user_id:

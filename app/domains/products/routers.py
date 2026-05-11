@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, Depends, status
+from fastapi import APIRouter, Body, Depends, Query, status
 from app.cache_key_builders import key_builder_for_lists, product_key_builder
 from app.domains.products.schemas import (
     ProductAdminDeletePublic,
@@ -62,6 +62,12 @@ async def get_products(
     sort_by: ProductSortBy,
     sort_order: SortOrder,
     current_user: OptionalUserDep,
+    search: str | None = Query(
+        None,
+        min_length=1,
+        max_length=255,
+        description="Поиск по названию/описанию",
+    ),
 ):
     user_id = current_user.id if current_user else None
     try:
@@ -71,6 +77,7 @@ async def get_products(
             sort_by=sort_by.name,
             sort_order=sort_order.value,
             user_id=user_id,
+            search=search,
         )
     except WrongSortByException:
         raise WrongSortByHTTPException

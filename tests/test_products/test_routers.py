@@ -3,10 +3,12 @@ from app.auth import create_access_token
 from app.exceptions.python_exceptions import (
     CategoryNotFoundException,
     CurrentProductSellerException,
+    MinPriceMustBeLessThanMaxPriceException,
     NotEnoughRightsException,
     ProductNotFoundException,
     WrongSortByException,
 )
+from app.models.product import Product
 
 
 async def test_get_all_products(category_user_product, async_client):
@@ -45,6 +47,30 @@ async def test_get_all_products_with_worng_sortby_data(
                 "sort_order": "desc",
                 "page": 1,
                 "page_size": 10,
+            },
+        )
+
+        assert res.status_code == 400
+        mock_obj.assert_called_once()
+
+
+async def test_get_all_products_with_minprice_more_maxprice(
+    category_user_product, async_client
+):
+    with patch(
+        "app.domains.products.service.ProductService.get_all_products"
+    ) as mock_obj:
+        mock_obj.side_effect = MinPriceMustBeLessThanMaxPriceException
+
+        res = await async_client.get(
+            "/products",
+            params={
+                "sort_by": "price",
+                "sort_order": "desc",
+                "page": 1,
+                "page_size": 10,
+                "min_price": 250,
+                "max_price": 200,
             },
         )
 
@@ -118,6 +144,31 @@ async def test_get_products_by_category(category_user_product, async_client):
     )
 
     assert res.status_code == 200
+
+
+async def test_get_all_products_by_category_with_minprice_more_maxprice(
+    category_user_product, async_client
+):
+    category, *_ = category_user_product
+    with patch(
+        "app.domains.products.service.ProductService.get_all_products"
+    ) as mock_obj:
+        mock_obj.side_effect = MinPriceMustBeLessThanMaxPriceException
+
+        res = await async_client.get(
+            f"/products/category/{category.id}",
+            params={
+                "sort_by": "price",
+                "sort_order": "desc",
+                "page": 1,
+                "page_size": 10,
+                "min_price": 250,
+                "max_price": 200,
+            },
+        )
+
+        assert res.status_code == 400
+        mock_obj.assert_called_once()
 
 
 async def test_get_products_by_category_with_inactive_product(
@@ -346,3 +397,153 @@ async def test_get_product_reviews_for_non_existing_product(async_client):
         res = await async_client.get(f"/products/{1234}/reviews")
         assert res.status_code == 404
         mock_obj.assert_called_once()
+
+
+async def test_search_products(category_user_product, async_client, db):
+    category, user, product = category_user_product
+
+    product_data = {
+        "name": "Test Product 2",
+        "description": None,
+        "price": 20.00,
+        "image_url": "",
+        "stock": 10,
+        "category_id": category.id,
+        "seller_id": user.id,
+    }
+
+    product = Product(**product_data)
+    db.add(product)
+    await db.commit()
+
+    res = await async_client.get(
+        "/products",
+        params={
+            "sort_by": "price",
+            "sort_order": "desc",
+            "page": 1,
+            "page_size": 10,
+            "search": "Test Product",
+        },
+    )
+
+    assert res.status_code == 200
+    assert res.json()["total"] == 2
+
+
+async def test_search_products_by_description_in_russian(
+    category_user_product, async_client, db
+):
+    category, user, product = category_user_product
+
+    product_data = {
+        "name": "Test Product 2",
+        "description": "Описание для второго тестового товара",
+        "price": 20.00,
+        "image_url": "",
+        "stock": 10,
+        "category_id": category.id,
+        "seller_id": user.id,
+    }
+
+    product = Product(**product_data)
+    db.add(product)
+    await db.commit()
+
+    res = await async_client.get(
+        "/products",
+        params={
+            "sort_by": "price",
+            "sort_order": "desc",
+            "page": 1,
+            "page_size": 10,
+            "search": "Описание",
+        },
+    )
+
+    assert res.status_code == 200
+    assert res.json()["total"] == 1
+
+
+async def test_search_products_with_inactive_category(
+    category_user_product, async_client, db
+):
+    category, *_ = category_user_product
+
+    category.is_active = False
+    await db.commit()
+
+    res = await async_client.get(
+        "/products",
+        params={
+            "sort_by": "price",
+            "sort_order": "desc",
+            "page": 1,
+            "page_size": 10,
+            "search": "Test Product",
+        },
+    )
+
+    assert res.status_code == 200
+    assert res.json()["total"] == 0
+    assert len(res.json()["items"]) == 0
+
+
+async def test_search_products_with_inactive_user(
+    category_user_product, async_client, db
+):
+    category, user, _ = category_user_product
+
+    product_data = {
+        "name": "Test Product 2",
+        "description": "Описание для второго тестового товара",
+        "price": 20.00,
+        "image_url": "",
+        "stock": 10,
+        "category_id": category.id,
+        "seller_id": user.id,
+    }
+    user.is_active = False
+
+    product = Product(**product_data)
+    db.add(product)
+    await db.commit()
+
+    res = await async_client.get(
+        "/products",
+        params={
+            "sort_by": "price",
+            "sort_order": "desc",
+            "page": 1,
+            "page_size": 10,
+            "search": "Test Product",
+        },
+    )
+
+    assert res.status_code == 200
+    assert res.json()["total"] == 0
+    assert len(res.json()["items"]) == 0
+
+
+async def test_search_products_with_inactive_product(
+    category_user_product, async_client, db
+):
+    *_, product = category_user_product
+
+    product.is_active = False
+    await db.commit()
+
+    res = await async_client.get(
+        "/products",
+        params={
+            "sort_by": "price",
+            "sort_order": "desc",
+            "page": 1,
+            "page_size": 10,
+            "search": "Test Product",
+        },
+    )
+
+    assert res.status_code == 200
+    assert res.json()["total"] == 0
+    assert len(res.json()["items"]) == 0

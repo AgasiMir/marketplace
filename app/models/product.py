@@ -8,9 +8,12 @@ from sqlalchemy import (
     Numeric,
     ForeignKey,
     CheckConstraint,
+    Index,
+    Computed,
     text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.dialects.postgresql import TSVECTOR
 from app.models.mixins import TimestampMixin
 
 from app.core.database import Base
@@ -25,6 +28,7 @@ class Product(TimestampMixin, Base):
     __table_args__ = (
         CheckConstraint("stock >= 0", name="positive_amount_check"),
         CheckConstraint("price >= 0.0", name="positive_price_check"),
+        Index("ix_products_tsv_gin", "tsv", postgresql_using="gin"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -45,6 +49,20 @@ class Product(TimestampMixin, Base):
         index=True,
     )
     rating: Mapped[float] = mapped_column(Float, default=0.0, server_default=text("0"))
+
+    tsv: Mapped[TSVECTOR] = mapped_column(
+        TSVECTOR,
+        Computed(
+            """
+        setweight(to_tsvector('english', coalesce(name, '')), 'A')
+        || setweight(to_tsvector('russian', coalesce(name, '')), 'A')
+        || setweight(to_tsvector('english', coalesce(description, '')), 'B')
+        || setweight(to_tsvector('russian', coalesce(description, '')), 'B')
+        """,
+            persisted=True,
+        ),
+        nullable=False,
+    )
 
     category: Mapped["Category"] = relationship(back_populates="products")
     seller: Mapped["User"] = relationship(back_populates="products")

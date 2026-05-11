@@ -56,6 +56,7 @@ class ProductService:
         sort_order: str,
         category_id: int | None = None,
         user_id: int | None = None,
+        search: str | None = None,
     ) -> ProductPublicWithPagination:
 
         data = await self._pagination_and_sort(
@@ -69,6 +70,7 @@ class ProductService:
             category_id=category_id,
             user_id=user_id,
             filters=filters,
+            search=search,
         )
 
     async def get_product(self, product_id: int, user_id: int | None) -> ProductPublic:

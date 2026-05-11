@@ -29,7 +29,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 app = FastAPI(lifespan=lifespan, title="Marketplace", version="1.0")
 
 
-# app.middleware("http")(log_requests)
+app.middleware("http")(log_requests)
 app.middleware("http")(dispatch)
 app.middleware("http")(metrics_middleware)
 
