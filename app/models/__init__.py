@@ -3,6 +3,14 @@ from .user import User
 from .product import Product
 from .favorite import Favorite
 from .review import Review
+from .cart_item import CartItem
 
 
-__all__ = ["Category", "User", "Product", "Favorite", "Review"]
+__all__ = [
+    "Category",
+    "User",
+    "Product",
+    "Favorite",
+    "Review",
+    "CartItem",
+]

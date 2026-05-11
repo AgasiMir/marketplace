@@ -63,3 +63,7 @@ class OnlyAuthorOrAdminCanDeleteReviewException(MarketplaceException):
 
 class MinPriceMustBeLessThanMaxPriceException(MarketplaceException):
     detail = "MinPrice Must Be Less Than MaxPrice."
+
+
+class CartItemNotFoundException(MarketplaceException):
+    detail = "Cart Item Not Found."

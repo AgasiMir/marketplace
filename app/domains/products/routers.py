@@ -43,7 +43,7 @@ from fastapi_cache.decorator import cache
 
 router = APIRouter(
     prefix="/products",
-    tags=["products 🛒🛒"],
+    tags=["products 🛍🛍"],
     dependencies=[Depends(RateLimiter(limiter=Limiter(Rate(10, Duration.SECOND * 2))))],
 )
 
