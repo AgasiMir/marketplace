@@ -23,8 +23,8 @@ class CategoryPublic(BaseModel):
 
 class CategoryCreate(BaseModel):
     """
-    Модель для создания и обновления категории.
-    Используется в POST и PUT запросах.
+    Модель для создания категории.
+    Используется в POST запросах.
     """
 
     name: str = Field(

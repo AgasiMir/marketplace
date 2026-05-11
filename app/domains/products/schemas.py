@@ -34,6 +34,12 @@ class ProductPublic(BaseModel):
 
 
 class ProductPublicWithPagination(BaseModel):
+    """
+    Модель для ответа с данными товара,
+    включая общее количество товаров и пагинацию.
+    Используется в GET-запросах.
+    """
+
     items: list[ProductPublic]
     total: int = Field(description="Общее количество товаров")
     pagination: Pagination
@@ -41,8 +47,8 @@ class ProductPublicWithPagination(BaseModel):
 
 class ProductCreate(BaseModel):
     """
-    Модель для создания и обновления товара.
-    Используется в POST и PUT запросах.
+    Модель для создания товара.
+    Используется в POST запросах.
     """
 
     name: str = Field(
@@ -112,6 +118,11 @@ class ProductPartialUpdate(BaseModel):
 
 
 class ProductURDPublic(BaseModel):
+    """
+    Модель для ответа с данными товара.
+    Испльзуется в UPDATE и DELETE запросах.
+    """
+
     message: str
     id: int
     name: str
@@ -120,5 +131,10 @@ class ProductURDPublic(BaseModel):
 
 
 class ProductAdminDeletePublic(ProductURDPublic):
+    """
+    Модель для ответа с данными товара.
+    Используется в DELETE запросах от имени администратора.
+    """
+
     seller_email: EmailStr
     seller_username: str
