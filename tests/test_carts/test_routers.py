@@ -69,6 +69,39 @@ async def test_add_item_to_cart_wtih_wrong_params(
     assert response.status_code == 422
 
 
+async def test_add_negative_amount_of_items_to_cart(
+    category_user_product, authenticated_buyer
+):
+    _, user, product = category_user_product
+
+    response = await authenticated_buyer.post(
+        "/cart/items",
+        json={"product_id": product.id, "quantity": -8, "user_id": user.id},
+    )
+    assert response.status_code == 422
+
+
+async def test_add_no_more_than_stock_amount_of_items_to_cart(
+    category_user_product, authenticated_buyer
+):
+    _, user, product = category_user_product
+
+    response = await authenticated_buyer.post(
+        "/cart/items",
+        json={"product_id": product.id, "quantity": 8, "user_id": user.id},
+    )
+    assert response.status_code == 201
+    assert response.json()["quantity"] == 8
+
+    response = await authenticated_buyer.post(
+        "/cart/items",
+        json={"product_id": product.id, "quantity": 7, "user_id": user.id},
+    )
+
+    assert response.status_code == 201
+    assert response.json()["quantity"] == product.stock
+
+
 async def test_update_cart_item(category_user_product, authenticated_buyer):
     _, user, product = category_user_product
 
@@ -87,6 +120,50 @@ async def test_update_cart_item(category_user_product, authenticated_buyer):
         },
     )
     assert response.json()["quantity"] == 3
+
+
+async def test_update_cart_item_with_negative_quantity(
+    category_user_product, authenticated_buyer
+):
+    _, user, product = category_user_product
+
+    response = await authenticated_buyer.post(
+        "/cart/items",
+        json={"product_id": product.id, "quantity": 2, "user_id": user.id},
+    )
+
+    assert response.status_code == 201
+
+    response = await authenticated_buyer.put(
+        f"/cart/items/{product.id}",
+        json={
+            "quantity": -3,
+            "user_id": user.id,
+        },
+    )
+    assert response.status_code == 422
+
+
+async def test_update_cart_item_with_quantity_more_than_product_stock(
+    category_user_product, authenticated_buyer
+):
+    _, user, product = category_user_product
+
+    response = await authenticated_buyer.post(
+        "/cart/items",
+        json={"product_id": product.id, "quantity": 2, "user_id": user.id},
+    )
+
+    assert response.status_code == 201
+
+    response = await authenticated_buyer.put(
+        f"/cart/items/{product.id}",
+        json={
+            "quantity": 15,
+            "user_id": user.id,
+        },
+    )
+    assert response.json()["quantity"] <= product.stock
 
 
 async def test_update_cart_item_with_product_not_found(

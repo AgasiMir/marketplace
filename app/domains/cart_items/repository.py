@@ -20,7 +20,7 @@ class CartItemsRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def _check_if_product_exists(self, product_id: int) -> bool:
+    async def _check_if_product_exists(self, product_id: int) -> Product:
         product = await self.session.scalar(
             select(Product)
             .join(Product.category)
@@ -35,7 +35,7 @@ class CartItemsRepository:
         if not product:
             raise ProductNotFoundException
 
-        return True
+        return product
 
     async def _get_cart_item(self, user_id: int, product_id: int) -> CartItem | None:
         cart_item = await self.session.scalar(
@@ -77,12 +77,18 @@ class CartItemsRepository:
     async def add_item_to_cart(
         self, create_cart_item: CartItemCreate, user_id: int
     ) -> CartItemPublic:
-        await self._check_if_product_exists(create_cart_item.product_id)
+        product = await self._check_if_product_exists(create_cart_item.product_id)
+
+        if create_cart_item.quantity > product.stock:
+            create_cart_item.quantity = product.stock
 
         cart_item = await self._get_cart_item(user_id, create_cart_item.product_id)
 
         if cart_item:
-            cart_item.quantity += create_cart_item.quantity
+            if cart_item.quantity + create_cart_item.quantity > product.stock:
+                cart_item.quantity = product.stock
+            else:
+                cart_item.quantity += create_cart_item.quantity
 
         else:
             cart_item = CartItem(**create_cart_item.model_dump(), user_id=user_id)
@@ -94,7 +100,10 @@ class CartItemsRepository:
     async def update_cart_item(
         self, product_id: int, update_cart_item: CartItemUpdate, user_id: int
     ) -> CartItemPublic:
-        await self._check_if_product_exists(product_id)
+        product = await self._check_if_product_exists(product_id)
+
+        if update_cart_item.quantity > product.stock:
+            update_cart_item.quantity = product.stock
 
         cart_item = await self._get_cart_item(user_id, product_id)
 
@@ -121,11 +130,7 @@ class CartItemsRepository:
         await self.session.delete(cart_item)
         await self.session.flush()
 
-        return
-
     async def clear_cart(self, user_id: int) -> None:
 
         await self.session.execute(delete(CartItem).where(CartItem.user_id == user_id))
         await self.session.flush()
-
-        return
