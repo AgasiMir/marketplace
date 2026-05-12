@@ -105,3 +105,39 @@ class MinPriceMustBeLessThanMaxPriceHTTPException(MarketplaceHTTPException):
 class CartItemNotFoundHTTPException(MarketplaceHTTPException):
     status_code = status.HTTP_404_NOT_FOUND
     detail = "Cart Item Not Found."
+
+
+class CartIsEmptyHTTPException(MarketplaceHTTPException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    detail = "Cart Is Empty."
+
+
+class ProductIsUnavailableHTTPException(MarketplaceHTTPException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, message: str):
+        self.detail = message
+
+
+class ProductIsOutOfStockHTTPException(MarketplaceHTTPException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, message: str):
+        self.detail = message
+
+
+class ProductWithNoPriceHTTPException(MarketplaceHTTPException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, message: str):
+        self.detail = message
+
+
+class FailedToLoadOrderHTTPException(MarketplaceHTTPException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    detail = "Failed To Load Created Order."
+
+
+class OrderNotFoundHTTPException(MarketplaceHTTPException):
+    status_code = status.HTTP_404_NOT_FOUND
+    detail = "Order Not Found."

@@ -8,7 +8,7 @@ from app.models.mixins import TimestampMixin
 
 
 if TYPE_CHECKING:
-    from app.models import Product, Favorite, Review, CartItem
+    from app.models import Product, Favorite, Review, CartItem, Order
 
 
 class UserRole(StrEnum):
@@ -37,6 +37,10 @@ class User(TimestampMixin, Base):
     favorites: Mapped[list["Favorite"]] = relationship(back_populates="user")
     reviews: Mapped[list["Review"]] = relationship(back_populates="user")
     cart_items: Mapped[list["CartItem"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    orders: Mapped[list["Order"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
     )

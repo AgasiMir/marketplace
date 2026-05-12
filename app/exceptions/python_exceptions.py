@@ -67,3 +67,30 @@ class MinPriceMustBeLessThanMaxPriceException(MarketplaceException):
 
 class CartItemNotFoundException(MarketplaceException):
     detail = "Cart Item Not Found."
+
+
+class CartIsEmptyException(MarketplaceException):
+    detail = "Cart Is Empty."
+
+
+class ProductIsUnavailableException(MarketplaceException):
+    def __init__(self, product_id: int):
+        self.detail = f"Product with id {product_id} is unavailable."
+
+
+class ProductIsOutOfStockException(MarketplaceException):
+    def __init__(self, product_name: str):
+        self.detail = f"Product {product_name!r} is out of stock."
+
+
+class ProductWithNoPriceException(MarketplaceException):
+    def __init__(self, product_name: str):
+        self.detail = f"Product {product_name!r} has no price set."
+
+
+class FailedToLoadOrderException(MarketplaceException):
+    detail = "Failed To Load Created Order."
+
+
+class OrderNotFoundException(MarketplaceException):
+    detail = "Order Not Found."

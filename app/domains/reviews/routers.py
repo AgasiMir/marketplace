@@ -1,5 +1,7 @@
 from asyncpg import NotNullViolationError
-from fastapi import APIRouter, Body, HTTPException, status
+from fastapi import APIRouter, Body, Depends, HTTPException, status
+from pyrate_limiter import Duration, Limiter, Rate
+from fastapi_limiter.depends import RateLimiter
 
 from app.domains.dependencies import ReviewServiceDep, UserDep
 from app.domains.reviews.schemas import ReviewCreate, ReviewPublic
@@ -15,7 +17,11 @@ from app.exceptions.python_exceptions import (
 )
 
 
-router = APIRouter(prefix="/reviews", tags=["reviews 😀😡"])
+router = APIRouter(
+    prefix="/reviews",
+    tags=["reviews 😀😡"],
+    dependencies=[Depends(RateLimiter(limiter=Limiter(Rate(10, Duration.SECOND * 2))))],
+)
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=ReviewPublic)

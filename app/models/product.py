@@ -20,7 +20,7 @@ from app.core.database import Base
 
 
 if TYPE_CHECKING:
-    from app.models import Category, User, Favorite, Review, CartItem
+    from app.models import Category, User, Favorite, Review, CartItem, OrderItem
 
 
 class Product(TimestampMixin, Base):
@@ -72,6 +72,7 @@ class Product(TimestampMixin, Base):
         back_populates="product",
         cascade="all, delete-orphan",
     )
+    order_items: Mapped[list["OrderItem"]] = relationship(back_populates="product")
 
     def __repr__(self) -> str:
         return f"{self.name}, {self.price}"

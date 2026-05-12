@@ -1,4 +1,6 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Depends, status
+from pyrate_limiter import Duration, Limiter, Rate
+from fastapi_limiter.depends import RateLimiter
 
 from app.domains.cart_items.schemas import (
     CartItemUpdate,
@@ -17,7 +19,11 @@ from app.exceptions.python_exceptions import (
 )
 
 
-router = APIRouter(prefix="/cart", tags=["cart 🛒🛒"])
+router = APIRouter(
+    prefix="/cart",
+    tags=["cart 🛒🛒"],
+    dependencies=[Depends(RateLimiter(limiter=Limiter(Rate(10, Duration.SECOND * 2))))],
+)
 
 
 @router.get("", response_model=CartPublic)

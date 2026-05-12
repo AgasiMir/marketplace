@@ -26,6 +26,7 @@ class CartItemsRepository:
             .join(Product.category)
             .join(Product.seller)
             .where(
+                Product.stock > 0,
                 Product.id == product_id,
                 Product.is_active,
                 Category.is_active,
