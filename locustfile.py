@@ -60,6 +60,12 @@ class MarketplaceUser(HttpUser):
     def get_product_by_category(self):
         self.client.get(
             "/products/category/1",
+            params={
+                "sort_by": "created_at",
+                "sort_order": "asc",
+                "page": 1,
+                "page_size": 10,
+            },
         )
 
     @task(2)
