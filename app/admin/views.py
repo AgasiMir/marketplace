@@ -40,7 +40,14 @@ class UserAdmin(ModelView, model=User):
     column_formatters = {User.first_name: lambda m, a: m.first_name[:20] + "..."}
     column_formatters = {User.last_name: lambda m, a: m.last_name[:20] + "..."}
     # Details page
-    column_details_exclude_list = [User.password]
+    column_details_exclude_list = [
+        User.password,
+        User.favorites,
+        User.reviews,
+        User.orders,
+        User.cart_items,
+        User.products,
+    ]
     # Pagination options
     page_size = 10
     page_size_options = [10, 20, 50]
@@ -90,6 +97,8 @@ class CategoryAdmin(ModelView, model=Category):
         Category.id,
         Category.name,
     ]
+    # Details page
+    column_details_exclude_list = [Category.products]
     # Pagination options
     page_size = 10
     page_size_options = [10, 20, 50]
@@ -134,10 +143,19 @@ class ProductAdmin(ModelView, model=Product):
             m.description[:20] + "..." if m.description else m.description
         )
     }
+    # Details page
+    column_details_exclude_list = [
+        Product.tsv,
+        Product.favorites,
+        Product.reviews,
+        Product.order_items,
+        Product.cart_items,
+    ]
     # Pagination options
     page_size = 10
     page_size_options = [10, 20, 50]
     # Form options
+    form_excluded_columns = [Product.tsv]
     form_edit_rules = ["is_active"]
 
 
