@@ -115,6 +115,7 @@ jobs:
         run: |
           # Используем правильные имена переменных (как в ошибке)
           cat > .env.test << 'EOF'
+          ENVIRONMENT=TEST
           DB_DRIVER=postgresql+asyncpg
           POSTGRES_USER=postgres
           POSTGRES_PASSWORD=postgres
