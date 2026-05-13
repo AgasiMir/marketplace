@@ -1,24 +1,24 @@
 services:
  
-  # marketplace:
-  #   build: .
-  #   container_name: marketplace_app
-  #   env_file: .env.prod
-  #   ports:
-  #     - "8000:8000"
-  #   networks:
-  #     - marketplace_network
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #   restart: unless-stopped
-  #   command: bash -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4"
+  marketplace:
+    build: .
+    container_name: marketplace_app
+    env_file: .env.prod
+    ports:
+      - "8000:8000"
+    networks:
+      - marketplace_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    command: bash -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4"
   
   postgres:
       image: postgres:17
       container_name: marketplace_db
       env_file: 
-        .env.dev
+        .env.prod
       ports:
         - "6432:5432"  
       volumes:
@@ -70,7 +70,7 @@ services:
       networks:
         - marketplace_network 
       restart: unless-stopped
-      env_file: .env.dev
+      env_file: .env.prod
       healthcheck:
         test: [ "CMD", "rabbitmq-diagnostics", "check_port_connectivity" ]
         interval: 10s
@@ -82,7 +82,7 @@ services:
     build: .
     container_name: marketplace_celery
     env_file:
-      - .env.dev
+      - .env.prod
     networks:
       - marketplace_network
     depends_on:
@@ -141,7 +141,7 @@ services:
     ports:
       - "3000:3000"
     env_file:
-      - .env.dev
+      - .env.prod
     networks:
       - marketplace_network
 

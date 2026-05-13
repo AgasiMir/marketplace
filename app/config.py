@@ -43,7 +43,7 @@ class Settings(BaseSettings):
         url = f"{self.DB_DRIVER}://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.POSTGRES_DB}"
         return url
 
-    model_config = SettingsConfigDict(env_file=[".env.dev"])
+    model_config = SettingsConfigDict(env_file=[".env.prod"])
 
 
 settings = Settings()
