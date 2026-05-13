@@ -113,50 +113,35 @@ jobs:
 
       - name: Prepare .env.test file for CI
         run: |
-          if [ -f .env.test ]; then
-            echo "Using existing .env.test file"
-          else
-            echo "Creating .env.test for CI environment"
-            if [ -f .env.test.example ]; then
-              cp .env.test.example .env.test
-              # Заменяем значения на CI-дружественные
-              sed -i 's/ENVIRONMENT=.*/ENVIRONMENT=test/' .env.test
-              sed -i 's/DB_USER=.*/DB_USER=postgres/' .env.test
-              sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=postgres/' .env.test
-              sed -i 's/DB_HOST=.*/DB_HOST=localhost/' .env.test
-              sed -i 's/DB_PORT=.*/DB_PORT=5432/' .env.test
-              sed -i 's/DB_NAME=.*/DB_NAME=marketplace_test/' .env.test
-              sed -i 's/SECRET_KEY = .*/SECRET_KEY = test_secret_key/' .env.test
-              sed -i 's/ALGORITHM = .*/ALGORITHM = HS256/' .env.test
-              sed -i 's/REDIS_HOST = .*/REDIS_HOST = localhost/' .env.test
-              sed -i 's/REDIS_PORT = .*/REDIS_PORT = 6379/' .env.test
-              sed -i 's/RABBITMQ_DEFAULT_USER=.*/RABBITMQ_DEFAULT_USER=guest/' .env.test
-              sed -i 's/RABBITMQ_DEFAULT_PASS=.*/RABBITMQ_DEFAULT_PASS=guest/' .env.test
-              sed -i 's/RABBITMQ_DEFAULT_HOST=.*/RABBITMQ_DEFAULT_HOST=localhost/' .env.test
-              sed -i 's/RABBITMQ_DEFAULT_PORT=.*/RABBITMQ_DEFAULT_PORT=5672/' .env.test
-              sed -i 's/MailDEV_HOST=.*/MailDEV_HOST=localhost/' .env.test
-              sed -i 's/authentication_backend_secret_key=.*/authentication_backend_secret_key=test_admin_secret/' .env.test
-            else
-              # Если примера нет, создаём минимальный .env.test построчно
-              echo "ENVIRONMENT=test" > .env.test
-              echo "DB_DRIVER=postgresql+asyncpg" >> .env.test
-              echo "DB_USER=postgres" >> .env.test
-              echo "DB_PASSWORD=postgres" >> .env.test
-              echo "DB_HOST=localhost" >> .env.test
-              echo "DB_PORT=5432" >> .env.test
-              echo "DB_NAME=marketplace_test" >> .env.test
-              echo "SECRET_KEY=test_secret_key" >> .env.test
-              echo "ALGORITHM=HS256" >> .env.test
-              echo "REDIS_HOST=localhost" >> .env.test
-              echo "REDIS_PORT=6379" >> .env.test
-              echo "RABBITMQ_DEFAULT_USER=guest" >> .env.test
-              echo "RABBITMQ_DEFAULT_PASS=guest" >> .env.test
-              echo "RABBITMQ_DEFAULT_HOST=localhost" >> .env.test
-              echo "RABBITMQ_DEFAULT_PORT=5672" >> .env.test
-              echo "MailDEV_HOST=localhost" >> .env.test
-              echo "authentication_backend_secret_key=test_admin_secret" >> .env.test
+          # Используем правильные имена переменных (как в ошибке)
+          cat > .env.test << 'EOF'
+          DB_DRIVER=postgresql+asyncpg
+          POSTGRES_USER=postgres
+          POSTGRES_PASSWORD=postgres
+          DB_HOST=localhost
+          DB_PORT=5432
+          POSTGRES_DB=marketplace_test
+          SECRET_KEY=test_secret_key
+          ALGORITHM=HS256
+          REDIS_HOST=localhost
+          REDIS_PORT=6379
+          GF_SECURITY_ADMIN_USER=admin
+          GF_SECURITY_ADMIN_PASSWORD=admin
+          RABBITMQ_DEFAULT_USER=guest
+          RABBITMQ_DEFAULT_PASS=guest
+          RABBITMQ_DEFAULT_PORT=5672
+          RABBITMQ_DEFAULT_HOST=localhost
+          MailDEV_HOST=localhost
+          authentication_backend_secret_key=test_admin_secret
+          EOF
+
+      - name: Export environment variables
+        run: |
+          while IFS= read -r line; do
+            if [[ -n "$line" && ! "$line" =~ ^# ]]; then
+              echo "$line" >> $GITHUB_ENV
             fi
-          fi
+          done < .env.test
 
       - name: Run database migrations
         run: uv run alembic upgrade head
