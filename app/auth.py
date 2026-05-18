@@ -7,8 +7,6 @@ from app.config import settings
 from app.middlewares.log import logger
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 REFRESH_TOKEN_EXPIRE_DAYS = 3
 
