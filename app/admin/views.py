@@ -36,9 +36,11 @@ class UserAdmin(ModelView, model=User):
     column_searchable_list = [User.username, User.first_name, User.last_name]
     column_sortable_list = [User.username, User.first_name, User.last_name]
 
-    column_formatters = {User.username: lambda m, a: m.username[:20] + "..."}
-    column_formatters = {User.first_name: lambda m, a: m.first_name[:20] + "..."}
-    column_formatters = {User.last_name: lambda m, a: m.last_name[:20] + "..."}
+    column_formatters = {
+        User.username: lambda m, a: m.username[:20] + "...",
+        User.first_name: lambda m, a: m.first_name[:20] + "...",
+        User.last_name: lambda m, a: m.last_name[:20] + "...",
+    }
     # Details page
     column_details_exclude_list = [
         User.password,
