@@ -1,5 +1,4 @@
 import time
-import json
 from uuid import uuid4
 from fastapi import Request
 from fastapi.responses import JSONResponse
