@@ -50,7 +50,7 @@ async def log_requests(request: Request, call_next):
     }
 
     if response.status_code >= 500:
-        logger.error(log_data)        
+        logger.error(log_data)
     elif response.status_code >= 400:
         logger.warning(log_data)
     else:
